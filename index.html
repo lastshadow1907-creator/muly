@@ -87,6 +87,15 @@ img,video,iframe{max-width:100%;height:auto}
  .row>*{flex-basis:100%}
 }
 @media(max-width:360px){.love-name{font-size:34px}.love-heart{font-size:19px}.photo-grid,.feature-grid{grid-template-columns:1fr}.header-actions button{font-size:10px!important;padding:7px!important}}
+
+/* Muly Chat */
+.muly-chat-feed{height:min(58vh,510px);min-height:300px;overflow-y:auto;padding:15px;background:linear-gradient(150deg,#fff5f7,#fffaf5);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;gap:10px}
+.muly-chat-msg{max-width:82%;padding:11px 14px;border-radius:17px 17px 17px 5px;background:#fff;border:1px solid #eddce1;align-self:flex-start;overflow-wrap:anywhere;white-space:pre-wrap;box-shadow:0 2px 8px #8b4d580b}
+.muly-chat-msg.mine{align-self:flex-end;border-radius:17px 17px 5px 17px;background:#f5d9e3;border-color:#e8bfce}
+.muly-chat-msg small{display:block;text-align:right;margin-top:5px;font-size:10px}
+.muly-chat-compose{display:flex;align-items:flex-end;gap:8px;margin-top:12px}.muly-chat-compose textarea{flex:1;min-width:0;min-height:48px;max-height:130px;margin:0;resize:vertical}.muly-chat-compose button{flex:0 0 auto;min-height:48px}
+body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .muly-chat-msg{background:#393048;border-color:#69536c;color:#f9e8f2}body.night .muly-chat-msg.mine{background:#75445f}
+@media(max-width:480px){.muly-chat-msg{max-width:90%}.muly-chat-compose button{padding:12px}}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -106,7 +115,8 @@ img,video,iframe{max-width:100%;height:auto}
 <section id="pair" class="card hidden"><div class="auth-mark">♡</div><h2>İkinizin alanını oluşturun 💌</h2><p>Biriniz çift alanı oluşturup davet kodunu diğerine göndersin. Diğeri kendi hesabından kodla katılsın.</p><button id="createPair">Davet kodu oluştur</button><hr style="border:0;border-top:1px solid #f5d7e3;margin:22px 0"><label>Davet kodu</label><input id="inviteInput" placeholder="Davet kodunu yaz"><button id="joinPair">Koda katıl</button></section>
 <section id="app" class="hidden"><div class="card" id="pushSettings"><h2>🔔 Telefon bildirimleri</h2><p class="intro">Sevgilinden kalp geldiğinde telefonunda bildirim görmek için bu cihazda izin ver.</p><button id="enablePush" type="button">🔔 Bildirimleri Aç</button><p class="muted" id="pushStatus" aria-live="polite">Henüz kontrol edilmedi.</p></div><div class="card relationship-card"><div class="section-kicker">♡ 14.02.2026 · 00:08 ♡</div><h2>Seninle geçen her saniye</h2><p class="intro">Birlikte yazdığımız hikâyenin başladığı o güzel andan beri…</p><div class="timer live-timer"><div><small>Gün</small><strong id="elapsed">—</strong></div><div><small>Saat</small><strong id="elapsedHours">—</strong></div><div><small>Dakika</small><strong id="elapsedMinutes">—</strong></div><div><small>Saniye</small><strong id="elapsedSeconds">—</strong></div></div><p class="anniversary-countdown">İlk yıl dönümümüze <strong id="remaining">—</strong></p><p class="muted" id="pairStatus"></p></div>
 <section class="card anniversary" id="anniversaryCard"><div class="section-kicker">14 MART · BİZİM GÜNÜMÜZ</div><h2 id="anniversaryTitle">İyi ki sen ♡</h2><p id="anniversaryText">Birlikte yazacağımız daha nice güzel yıllara...</p></section><div id="specialCelebrations"></div>
-<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
+<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
+<section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
 <section id="memories" class="card tab"><h2>Ortak anılarımız 📸</h2><form id="memoryForm"><label>Başlık</label><input id="memoryTitle" maxlength="150" required><label>Anı</label><textarea id="memoryDescription" required></textarea><label>Tarih</label><input id="memoryDate" type="date" required><label>Fotoğraf (isteğe bağlı, en fazla 10 MB)</label><input id="memoryPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Yeni anı ekle</button></form><div id="memoryList"></div></section>
 <section id="wishes" class="card tab hidden"><h2>Birlikte yapacaklarımız ✨</h2><form id="wishForm"><label>Hayalimiz</label><input id="wishTitle" maxlength="200" required><label>Detaylar</label><textarea id="wishNotes" placeholder="Nerede, nasıl, ne zaman?" maxlength="3000"></textarea><label>Hedef tarih (isteğe bağlı)</label><input id="wishDate" type="date"><label>Fotoğraf (isteğe bağlı)</label><input id="wishPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Listeye ekle</button></form><div id="wishList"></div></section>
 
@@ -320,6 +330,94 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(err => console.warn('Muly PWA:', err));
   });
 }
+</script>
+
+<script>
+// Muly Chat: mevcut uygulama fonksiyonlarına dokunmadan çalışır.
+(() => {
+  let channel = null, activeCouple = null, loading = false, lastSignature = '';
+  const feed = document.getElementById('mulyChatFeed');
+  const status = document.getElementById('mulyChatStatus');
+  const form = document.getElementById('mulyChatForm');
+  const input = document.getElementById('mulyChatText');
+  const send = document.getElementById('mulyChatSend');
+  function setStatus(message) { status.textContent = message; }
+  function scrollToBottom() { feed.scrollTop = feed.scrollHeight; }
+  async function loadMessages(force = false) {
+    if (!(typeof db !== "undefined" && db) || !(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id) || loading) return;
+    loading = true;
+    try {
+      const { data, error } = await db.from('muly_messages')
+        .select('id,sender_id,content,created_at')
+        .eq('couple_id', coupleInfo.couple_id)
+        .order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      const messages = (data || []).reverse();
+      const signature = messages.map(m => m.id).join('|');
+      if (force || signature !== lastSignature) {
+        const atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 90;
+        feed.replaceChildren();
+        for (const m of messages) {
+          const bubble = document.createElement('div');
+          bubble.className = 'muly-chat-msg' + (m.sender_id === user.id ? ' mine' : '');
+          const content = document.createElement('div');
+          content.textContent = m.content;
+          const stamp = document.createElement('small');
+          stamp.textContent = new Date(m.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+          bubble.append(content, stamp); feed.append(bubble);
+        }
+        if (!messages.length) {
+          const empty = document.createElement('p'); empty.className = 'muted';
+          empty.textContent = 'İlk mesajınızı gönderin 💗'; feed.append(empty);
+        }
+        lastSignature = signature;
+        if (atBottom || force) scrollToBottom();
+      }
+      setStatus('💗 Sohbetiniz hazır');
+    } catch (e) { console.error('Muly Chat:', e); setStatus('❌ Mesajlar yüklenemedi: ' + e.message); }
+    finally { loading = false; }
+  }
+  async function syncChat() {
+    if (!(typeof db !== "undefined" && db) || !(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id)) {
+      if (channel && typeof db !== "undefined" && db) { await db.removeChannel(channel); channel = null; }
+      activeCouple = null; lastSignature = ''; feed.replaceChildren();
+      return;
+    }
+    const id = coupleInfo.couple_id;
+    if (activeCouple === id) return;
+    if (channel) { await db.removeChannel(channel); channel = null; }
+    activeCouple = id; lastSignature = '';
+    await loadMessages(true);
+    channel = db.channel('muly-chat-' + id)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'muly_messages', filter:'couple_id=eq.' + id }, () => loadMessages())
+      .subscribe();
+  }
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const content = input.value.trim();
+    if (!content || !(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id)) return;
+    send.disabled = true;
+    try {
+      const { error } = await db.from('muly_messages').insert({
+        couple_id: coupleInfo.couple_id, sender_id: user.id, content
+      });
+      if (error) throw error;
+      input.value = ''; await loadMessages(true);
+    } catch (e) { console.error('Muly Chat:', e); setStatus('❌ Mesaj gönderilemedi: ' + e.message); }
+    finally { send.disabled = false; input.focus(); }
+  });
+  document.querySelector('[data-tab="chat"]').addEventListener('click', () => {
+    syncChat().then(() => loadMessages(true));
+  });
+  // Giriş ve çift bağlantısı sonradan tamamlanırsa da sohbet açılır.
+  setInterval(() => {
+    if (!(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id)) {
+      if (activeCouple) syncChat(); return;
+    }
+    if (activeCouple !== coupleInfo.couple_id) syncChat();
+    else if (!document.getElementById('chat').classList.contains('hidden')) loadMessages();
+  }, 4000);
+})();
 </script>
 </body>
 </html>
