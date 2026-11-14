@@ -116,10 +116,10 @@ body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .m
 <section id="setup" class="card"><h2>Önce bağlantıyı tamamla</h2><p>Bu dosyada <code>SUPABASE_URL</code> ve <code>SUPABASE_KEY</code> alanlarını kendi Supabase proje bilgilerinle değiştir.</p></section>
 <section id="auth" class="card hidden"><div class="auth-mark">❀</div><h2>Bizim hikâyemize hoş geldin ❤️</h2><form id="authForm"><label>E-posta</label><input id="email" type="email" required autocomplete="email"><label>Şifre</label><input id="password" type="password" required minlength="6" autocomplete="current-password"><div class="row"><button type="submit" id="loginBtn">Giriş yap</button><button type="button" class="secondary" id="signupBtn">Hesap oluştur</button></div></form><p class="muted">Kayıt sonrası e-posta doğrulaması gerekebilir.</p></section>
 <section id="pair" class="card hidden"><div class="auth-mark">♡</div><h2>İkinizin alanını oluşturun 💌</h2><p>Biriniz çift alanı oluşturup davet kodunu diğerine göndersin. Diğeri kendi hesabından kodla katılsın.</p><button id="createPair">Davet kodu oluştur</button><hr style="border:0;border-top:1px solid #f5d7e3;margin:22px 0"><label>Davet kodu</label><input id="inviteInput" placeholder="Davet kodunu yaz"><button id="joinPair">Koda katıl</button></section>
-<section id="app" class="hidden"><div class="card" id="pushSettings"><h2>🔔 Telefon bildirimleri</h2><p class="intro">Sevgilinden kalp geldiğinde telefonunda bildirim görmek için bu cihazda izin ver.</p><button id="enablePush" type="button">🔔 Bildirimleri Aç</button><p class="muted" id="pushStatus" aria-live="polite">Henüz kontrol edilmedi.</p></div><div class="card relationship-card"><div class="section-kicker">♡ 14.02.2026 · 00:08 ♡</div><h2>Seninle geçen her saniye</h2><p class="intro">Birlikte yazdığımız hikâyenin başladığı o güzel andan beri…</p><div class="timer live-timer"><div><small>Gün</small><strong id="elapsed">—</strong></div><div><small>Saat</small><strong id="elapsedHours">—</strong></div><div><small>Dakika</small><strong id="elapsedMinutes">—</strong></div><div><small>Saniye</small><strong id="elapsedSeconds">—</strong></div></div><p class="anniversary-countdown">İlk yıl dönümümüze <strong id="remaining">—</strong></p><p class="muted" id="pairStatus"></p></div>
+<section id="app" class="hidden"><div class="card" id="pushSettings"><h2>🔔 Telefon bildirimleri</h2><p class="intro">Sevgilinden kalp geldiğinde telefonunda bildirim görmek için bu cihazda izin ver.</p><button id="enablePush" type="button">🔔 Bildirimleri Aç</button><p class="muted" id="pushStatus" aria-live="polite">Henüz kontrol edilmedi.</p></div><div class="card relationship-card"><div class="section-kicker">♡ 14.03.2026 · 00:08 ♡</div><h2>Seninle geçen her saniye</h2><p class="intro">Birlikte yazdığımız hikâyenin başladığı o güzel andan beri…</p><div class="timer live-timer"><div><small>Gün</small><strong id="elapsed">—</strong></div><div><small>Saat</small><strong id="elapsedHours">—</strong></div><div><small>Dakika</small><strong id="elapsedMinutes">—</strong></div><div><small>Saniye</small><strong id="elapsedSeconds">—</strong></div></div><p class="anniversary-countdown">İlk yıl dönümümüze <strong id="remaining">—</strong></p><p class="muted" id="pairStatus"></p></div>
 <section class="card anniversary" id="anniversaryCard"><div class="section-kicker">14 MART · BİZİM GÜNÜMÜZ</div><h2 id="anniversaryTitle">İyi ki sen ♡</h2><p id="anniversaryText">Birlikte yazacağımız daha nice güzel yıllara...</p></section><div id="specialCelebrations"></div>
 <div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
-<section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini sevgilin seçecek 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
+<section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
 <section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
 <section id="memories" class="card tab"><h2>Ortak anılarımız 📸</h2><form id="memoryForm"><label>Başlık</label><input id="memoryTitle" maxlength="150" required><label>Anı</label><textarea id="memoryDescription" required></textarea><label>Tarih</label><input id="memoryDate" type="date" required><label>Fotoğraf (isteğe bağlı, en fazla 10 MB)</label><input id="memoryPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Yeni anı ekle</button></form><div id="memoryList"></div></section>
 <section id="wishes" class="card tab hidden"><h2>Birlikte yapacaklarımız ✨</h2><form id="wishForm"><label>Hayalimiz</label><input id="wishTitle" maxlength="200" required><label>Detaylar</label><textarea id="wishNotes" placeholder="Nerede, nasıl, ne zaman?" maxlength="3000"></textarea><label>Hedef tarih (isteğe bağlı)</label><input id="wishDate" type="date"><label>Fotoğraf (isteğe bağlı)</label><input id="wishPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Listeye ekle</button></form><div id="wishList"></div></section>
@@ -436,9 +436,15 @@ if ('serviceWorker' in navigator) {
     if (!baby) return;
     $b('babyNameDisplay').textContent = baby.name === 'Mini Muly' ? 'İsmini bekliyorum 🍼' : baby.name;
     $b('babyInfo').textContent = (baby.gender === 'girl' ? '👧 Kız' : '👦 Erkek') + ' · ⭐ Seviye ' + baby.level + ' · ' + baby.xp + ' XP';
-    // Yalnızca partner hesabına isim düzenleme arayüzü sunulur.
-    // İsim seçme alanı şimdilik açık; partner kimliği doğrulanınca kısıtlanacak.
+    // İki hesap da isim düzenleyebilir.
     $b('babyNameControls').classList.toggle('hidden', !user || !coupleInfo);
+    const needs=[['hunger',35,'🍼 Karnım acıktı!'],['energy',30,'😴 Uykum geldi!'],['hygiene',30,'🛁 Banyo yapmak istiyorum!'],['happiness',30,'🥺 Benimle oynar mısınız?']];
+    const urgent=needs.filter(([key,limit])=>baby[key]<limit).sort((a,b)=>baby[a[0]]-baby[b[0]])[0];
+    $b('babySpeech').textContent=urgent?urgent[2]:(baby.happiness>75?'🥰 Sizi çok seviyorum!':'👶 Birlikte oyun oynayalım mı?');
+    const xpProgress=baby.xp%100;
+    $b('babyXp').innerHTML='';
+    const xpText=document.createElement('div');xpText.textContent='⭐ Sonraki seviyeye '+(100-xpProgress)+' XP';
+    const xpTrack=document.createElement('div'),xpFill=document.createElement('i');xpFill.style.width=xpProgress+'%';xpTrack.append(xpFill);$b('babyXp').append(xpText,xpTrack);
     const labels = [['hunger','🍼 Tokluk'],['happiness','💗 Mutluluk'],['energy','⚡ Enerji'],['hygiene','🛁 Temizlik']];
     const root = $b('babyStats'); root.replaceChildren();
     for (const [key,label] of labels) {
@@ -448,12 +454,24 @@ if ('serviceWorker' in navigator) {
       const fill=document.createElement('i');fill.style.width=clamp(baby[key])+'%';bar.append(fill);box.append(t,bar);root.append(box);
     }
   }
+  let lastDecayCheck=0;
+  async function applyTimeDecay(record){
+    // Zamanla azalma yalnızca aktif oturumlarda hesaplanır.
+    const elapsed=Math.floor((Date.now()-new Date(record.updated_at).getTime())/3600000);
+    if(elapsed<1 || !Number.isFinite(elapsed))return record;
+    const hours=Math.min(elapsed,48);
+    const changes={hunger:Math.max(0,record.hunger-hours*3),energy:Math.max(0,record.energy-hours*2),hygiene:Math.max(0,record.hygiene-hours*2),happiness:Math.max(0,record.happiness-hours*2)};
+    const nextTime=new Date(new Date(record.updated_at).getTime()+hours*3600000).toISOString();
+    const {data,error}=await db.from('muly_babies').update({...changes,updated_at:nextTime}).eq('id',record.id).eq('updated_at',record.updated_at).select().maybeSingle();
+    if(error)console.warn('Bebek ihtiyaç güncelleme:',error);
+    return data||record;
+  }
   async function loadBaby() {
     if (!db || !user || !coupleInfo?.couple_id) return;
     const id=coupleInfo.couple_id;
     const {data,error}=await db.from('muly_babies').select('*').eq('couple_id',id).maybeSingle();
     if(error){$b('babyActionStatus').textContent='❌ '+error.message;return;}
-    if(data){baby=data;renderBaby();return;}
+    if(data){baby=data;renderBaby();if(Date.now()-lastDecayCheck>60000){lastDecayCheck=Date.now();const updated=await applyTimeDecay(data);if(updated!==data){baby=updated;renderBaby();}}return;}
     // İlk açan ortak bebeği oluşturur; UNIQUE couple_id iki eşzamanlı oluşturmayı önler.
     const {error:insertError}=await db.from('muly_babies').insert({couple_id:id});
     if(insertError && insertError.code!=='23505'){$b('babyActionStatus').textContent='❌ '+insertError.message;return;}
@@ -510,21 +528,28 @@ if ('serviceWorker' in navigator) {
       const hair=new THREE.MeshStandardMaterial({color:0x674333,roughness:1});
       const dark=new THREE.MeshStandardMaterial({color:0x332c36});
       const pink=new THREE.MeshStandardMaterial({color:0xf39aa7});
-      const diaper=new THREE.MeshStandardMaterial({color:0xffffff});
+      const diaper=new THREE.MeshStandardMaterial({color:0xfff8f3,roughness:.92});
+      const shine=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.25});
+      const blush=new THREE.MeshStandardMaterial({color:0xeaa0a5,roughness:.9});
       const root=new THREE.Group();scene.add(root);
       function ball(parent,r,x,y,z,mat,sx=1,sy=1,sz=1){const o=new THREE.Mesh(new THREE.SphereGeometry(r,24,16),mat);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;}
       ball(root,.85,0,1.65,0,skin,1,1.02,.87); // head
       ball(root,.62,0,.35,0,skin,.83,1.08,.68); // torso
-      ball(root,.48,0,-.25,0,diaper,1.1,.65,.8); // simple covered lower body
+      ball(root,.48,0,-.25,0,diaper,1.1,.65,.8); // anatomik ayrıntısız alt vücut
+      ball(root,.28,0,.42,.38,skin,1.15,.95,.45); // göbek
+      ball(root,.032,0,.43,.56,blush,.8,.7,.4); // göbek deliği
       for(const x of [-1,1]){
         ball(root,.18,x*.8,1.65,.02,skin,.8,1.25,.5); // ears
         ball(root,.11,x*.33,1.74,.71,dark,.75,1.12,.55); // eyes
-        ball(root,.035,x*.34,1.79,.78,new THREE.MeshStandardMaterial({color:0xffffff}));
+        ball(root,.035,x*.34,1.79,.78,shine);
+        ball(root,.13,x*.37,1.47,.68,blush,1,.45,.2); // yanak
         ball(root,.19,x*.4,1.35,.66,pink,1,.45,.25);
       }
       ball(root,.11,0,1.53,.81,skin,.8,.65,.65); // nose
-      ball(root,.14,0,1.25,.76,pink,1,.32,.4); // mouth
+      const mouth=ball(root,.14,0,1.25,.76,pink,1,.32,.4); // mouth
       ball(root,.46,0,2.28,-.03,hair,1,.27,.8);
+      ball(root,.12,-.22,2.40,.12,hair,1.3,.75,1);
+      ball(root,.12,.20,2.41,.12,hair,1.3,.75,1);
       const arms=[],legs=[];
       for(const x of [-1,1]){
         const arm=new THREE.Group();arm.position.set(x*.53,.67,0);root.add(arm);
@@ -536,7 +561,7 @@ if ('serviceWorker' in navigator) {
       function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
       resize();new ResizeObserver(resize).observe(stage);
       const clock=new THREE.Clock();
-      function frame(){requestAnimationFrame(frame);const t=clock.getElapsedTime();root.position.y=.07*Math.sin(t*2.2);root.rotation.y=.09*Math.sin(t*.7);arms.forEach((a,i)=>a.rotation.z=(i?1:-1)*(.12+Math.sin(t*(animateAction==='play'?8:2)+i)*.16));legs.forEach((l,i)=>l.rotation.x=Math.sin(t*(animateAction==='play'?8:2)+i*2)*.13);renderer.render(scene,camera);}
+      function frame(){requestAnimationFrame(frame);const t=clock.getElapsedTime();root.position.y=.07*Math.sin(t*2.2);root.rotation.y=.09*Math.sin(t*.7);mouth.scale.y=(baby?.hunger<35?.72: .32)+.12*Math.abs(Math.sin(t*2.1));arms.forEach((a,i)=>a.rotation.z=(i?1:-1)*(.12+Math.sin(t*(animateAction==='play'?8:2)+i)*.16));legs.forEach((l,i)=>l.rotation.x=Math.sin(t*(animateAction==='play'?8:2)+i*2)*.13);renderer.render(scene,camera);}
       frame();
     }catch(e){$b('baby3dStatus').textContent='3D model yüklenemedi: '+e.message;modelReady=false;}
   }
