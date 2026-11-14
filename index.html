@@ -134,6 +134,35 @@ body.night .muly-shortcut,body.night .muly-nav-card{background:#29263f;border-co
 body.night .muly-nav-toggle{color:#f5d5e4}body.night .muly-nav-toggle:hover{background:#352b43}
 body.night .muly-shortcut:hover{background:#3d314c}body.night .muly-nav-category{color:#e5b4ca}
 @media(max-width:600px){header{padding:10px 12px}.love-hero{padding:19px 10px}.love-name{font-size:clamp(35px,10vw,52px)}.love-quote{font-size:12px!important}.card{padding:17px 15px;margin:10px 0}.relationship-card h2{font-size:35px}.muly-shortcuts{gap:6px}.muly-shortcut{min-height:77px;padding:8px 2px;font-size:11px}.muly-shortcut .emoji{font-size:22px}.feature-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.live-timer{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.live-timer>div{padding:10px 2px}.live-timer strong{font-size:20px}.live-timer small{font-size:10px}}
+
+/* App-style navigation: one view at a time */
+body.muly-app-mode header{position:sticky;top:0;border-radius:0;max-width:none;padding:10px max(16px,calc((100vw - 950px)/2));}
+body.muly-app-mode main{padding-bottom:100px;max-width:900px}
+body.muly-app-mode .love-hero{display:none}
+body.muly-app-mode .night-message{display:none!important}
+body.muly-app-mode #app>.relationship-card,body.muly-app-mode #app>#anniversaryCard,body.muly-app-mode #app>#specialCelebrations,body.muly-app-mode #app>.muly-topline,body.muly-app-mode #app>#mulyShortcuts{display:none}
+body.muly-app-mode.muly-home #app>.relationship-card,body.muly-app-mode.muly-home #app>#anniversaryCard,body.muly-app-mode.muly-home #app>#specialCelebrations,body.muly-app-mode.muly-home #app>.muly-topline,body.muly-app-mode.muly-home #app>#mulyShortcuts{display:revert}
+body.muly-app-mode .muly-nav-card{display:none}
+body.muly-app-mode.muly-menu .muly-nav-card{display:block;margin-top:16px}
+body.muly-app-mode.muly-menu .muly-nav-panel{display:block!important}
+body.muly-app-mode.muly-menu .muly-nav-toggle{display:none}
+body.muly-app-mode.muly-menu .feature-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.muly-app-mode .tab{margin-top:16px}
+body.muly-app-mode.muly-home .tab,body.muly-app-mode.muly-menu .tab{display:none!important}
+body.muly-app-mode #pushSettings{display:none}
+body.muly-app-mode.muly-settings #pushSettings{display:block}
+.muly-bottom-bar{display:none}
+body.muly-app-mode .muly-bottom-bar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:90;padding:9px max(8px,calc((100vw - 700px)/2)) calc(10px + env(safe-area-inset-bottom));background:rgba(255,250,251,.96);backdrop-filter:blur(18px);border-top:1px solid #ead1d8;box-shadow:0 -8px 28px #6d3e5314}
+.muly-bottom-bar button{display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;color:#956b7d;box-shadow:none;border-radius:12px;padding:7px 2px;font-size:11px;font-weight:700;min-width:0}
+.muly-bottom-bar button span{font-size:22px;line-height:1.2}
+.muly-bottom-bar button.active{background:#f9e6ec;color:#913f61}
+.muly-screen-heading{display:none;font-family:'Playfair Display',serif;font-size:24px;margin:20px 4px 10px;color:var(--rose-dark)}
+body.muly-app-mode .muly-screen-heading{display:block}
+body.muly-app-mode.muly-home .muly-screen-heading{display:none}
+body.night .muly-bottom-bar{background:rgba(28,25,44,.97);border-color:#604962}
+body.night .muly-bottom-bar button{color:#e5bdd0}
+body.night .muly-bottom-bar button.active{background:#5a3b55;color:#fff0f5}
+@media(max-width:600px){body.muly-app-mode main{padding:0 12px 100px}body.muly-app-mode .relationship-card{padding:24px 14px}body.muly-app-mode .card{margin:12px 0}body.muly-app-mode header{padding:10px 14px}body.muly-app-mode .muly-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -704,5 +733,40 @@ window.mulyInitHouse=init;window.mulyRenderHouse=renderItems;window.mulyRotateHo
  }));
 })();
 </script>
-</body>
+<nav class="muly-bottom-bar" id="mulyBottomBar" aria-label="Uygulama gezinmesi"><button type="button" data-app-screen="home" class="active"><span>♡</span>Ana Sayfa</button><button type="button" data-app-screen="chat"><span>💬</span>Sohbet</button><button type="button" data-app-screen="house"><span>🏠</span>Evimiz</button><button type="button" data-app-screen="baby"><span>🍼</span>Bebek</button><button type="button" data-app-screen="menu"><span>☷</span>Menü</button></nav><script>
+/* Existing handlers stay in place; the app shell only changes navigation and visibility. */
+(()=>{
+ const app=document.getElementById('app');
+ const bar=document.getElementById('mulyBottomBar');
+ const title=document.createElement('h2');title.className='muly-screen-heading';title.id='mulyScreenHeading';app.insertBefore(title,app.firstChild);
+ let screen='home';
+ function navigate(next){
+  screen=next;
+  document.body.classList.add('muly-app-mode');
+  document.body.classList.toggle('muly-home',next==='home');
+  document.body.classList.toggle('muly-menu',next==='menu');
+  document.body.classList.remove('muly-settings');
+  bar.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.appScreen===next || (next==='memories' && b.dataset.appScreen==='menu')));
+  document.querySelectorAll('#app .tab').forEach(el=>el.classList.toggle('hidden',el.id!==next));
+  const labels={chat:'💌 Sohbet',house:'🏠 Evimiz',baby:'🍼 Bebeğimiz',menu:'♡ Tüm bölümler'};
+  title.textContent=labels[next]||'';
+  title.style.display=next==='home'||next==='menu'?'none':'block';
+  if(next==='menu'){document.getElementById('mulyNavPanel').classList.add('open');}
+  window.scrollTo({top:0,behavior:'instant'});
+ }
+ bar.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  const next=b.dataset.appScreen;
+  if(next!=='home'&&next!=='menu'){const original=document.querySelector('#featureNav [data-tab="'+next+'"]');original?.click();}
+  navigate(next);
+ }));
+ document.querySelectorAll('#featureNav [data-tab]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.tab)));
+ document.querySelectorAll('[data-open-tab]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.openTab)));
+ const settings=document.getElementById('mulySettingsToggle');
+ settings?.addEventListener('click',()=>document.body.classList.toggle('muly-settings'));
+ // Keep login/signup and pairing screens unaffected.
+ const observer=new MutationObserver(()=>{document.body.classList.toggle('muly-app-mode',!app.classList.contains('hidden'));if(!app.classList.contains('hidden')&&!document.body.classList.contains('muly-initialized')){document.body.classList.add('muly-initialized');navigate('home');}if(app.classList.contains('hidden'))document.body.classList.remove('muly-initialized','muly-home','muly-menu');});
+ observer.observe(app,{attributes:true,attributeFilter:['class']});
+ if(!app.classList.contains('hidden'))navigate('home');
+})();
+</script></body>
 </html>
