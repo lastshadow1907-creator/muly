@@ -170,7 +170,15 @@ body.night .muly-bottom-bar button.active{background:#5a3b55;color:#fff0f5}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Muly">
-</head>
+<style>
+.muly-achievements{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.muly-achievement{padding:17px;border:1px solid var(--line);border-radius:20px;background:var(--soft)}
+.muly-achievement .medal{font-size:28px}.muly-achievement h3{margin:7px 0;font-size:17px}.muly-achievement p{font-size:13px;margin:5px 0;color:var(--ink)}
+.muly-achievement .progress{height:8px;background:#eedce2;border-radius:9px;overflow:hidden;margin:12px 0}.muly-achievement .progress i{display:block;height:100%;background:#bc7591;border-radius:9px}
+.muly-achievement button{width:100%;padding:10px 8px;font-size:13px}.muly-achievement.done{border-color:#d6b4c3}
+@media(max-width:520px){.muly-achievements{grid-template-columns:1fr}}
+body.night .muly-achievement{background:#29263f}
+</style></head>
 <body><div id="introCurtain" aria-hidden="true"><div>♡ Muly ♡<small>İKİ KALP · TEK HİKÂYE</small></div></div><div class="stars" id="stars" aria-hidden="true"></div>
 <header><h1><span>Muly</span> ♡</h1><div class="header-actions"><button id="rainToggle" class="secondary theme-toggle" type="button" style="display:none">🌧️ Yağmur</button><button id="themeToggle" class="secondary theme-toggle" type="button" aria-pressed="false">🌙 Gece modu</button><button id="logout" class="secondary hidden">Çıkış yap</button></div></header>
 <main>
@@ -184,7 +192,7 @@ body.night .muly-bottom-bar button.active{background:#5a3b55;color:#fff0f5}
 <section class="card anniversary" id="anniversaryCard"><div class="section-kicker">14 MART · BİZİM GÜNÜMÜZ</div><h2 id="anniversaryTitle">İyi ki sen ♡</h2><p id="anniversaryText">Birlikte yazacağımız daha nice güzel yıllara...</p></section><div id="specialCelebrations"></div>
 <div class="muly-topline"><h2>Bizim dünyamız ♡</h2><button type="button" class="secondary muly-settings-btn" id="mulySettingsToggle">⚙️ Ayarlar</button></div>
 <div class="muly-shortcuts" id="mulyShortcuts"><button class="muly-shortcut" data-open-tab="chat"><span class="emoji">💌</span>Sohbet</button><button class="muly-shortcut" data-open-tab="baby"><span class="emoji">🍼</span>Bebeğimiz</button><button class="muly-shortcut" data-open-tab="house"><span class="emoji">🏠</span>Evimiz</button><button class="muly-shortcut" data-open-tab="memories"><span class="emoji">📸</span>Anılar</button></div>
-<div class="card muly-nav-card"><button type="button" class="muly-nav-toggle" id="mulyNavToggle" aria-expanded="false" aria-controls="mulyNavPanel"><span>♡ Tüm bölümler</span><span id="mulyNavArrow">⌄</span></button><div class="muly-nav-panel" id="mulyNavPanel"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary" data-tab="house">🏠 Evimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div></div>
+<div class="card muly-nav-card"><button type="button" class="muly-nav-toggle" id="mulyNavToggle" aria-expanded="false" aria-controls="mulyNavPanel"><span>♡ Tüm bölümler</span><span id="mulyNavArrow">⌄</span></button><div class="muly-nav-panel" id="mulyNavPanel"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary" data-tab="house">🏠 Evimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="achievements">🏆 Başarımlar</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div></div>
 <section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
 <section id="house" class="card tab hidden"><h2>🏠 Muly Evimiz</h2><p class="intro">Birlikte aşk parası biriktirin, seviye atlayın ve evinizi döşeyin. Gerçek para kullanılmaz. 💗</p><div class="house-hud"><div class="mini">💗 Aşk seviyesi<strong id="houseLevel">—</strong></div><div class="mini">⭐ Aşk XP<strong id="houseXp">—</strong></div><div class="mini">🪙 Ortak para<strong id="houseCoins">—</strong></div></div><div class="house-stage" id="houseStage"><p class="muted" id="house3dStatus" style="padding:14px">3D ev hazırlanıyor…</p></div><div class="house-controls"><button type="button" id="houseDaily">🎁 Günlük ödülü al (+20 XP, +15 🪙)</button><button type="button" id="houseRotate" class="secondary">🔄 Kamerayı çevir</button></div><div class="house-controls"><select id="houseRoom" aria-label="Oda seçimi" style="flex:1;min-width:160px;margin:0"><option value="salon">🛋️ Salon · Seviye 1</option><option value="yatak">🛏️ Yatak odası · Seviye 4</option><option value="mutfak">🍳 Mutfak · Seviye 6</option><option value="bebek">🍼 Bebek odası · Seviye 8</option></select><button type="button" id="houseEdit" class="secondary">🪑 Düzenle</button><button type="button" id="houseTurn" class="secondary">↻ Eşyayı döndür</button><button type="button" id="houseSave">💾 Kaydet</button></div><p class="muted" id="houseEditHint">Düzenle ile eşyaya dokunup sürükle. Odalar aşk seviyesiyle açılır.</p><p class="muted" id="houseStatus" role="status">Ortak ev yükleniyor…</p><div class="note" id="houseRewardInfo">💗 XP: Günlük giriş +10, ilk kalp +15, anı/fotoğraf +20 (günde 2), bebek bakımı +5 (günde 4), günlük ödül +20. Para daha yavaş birikir.</div><h3>🛍️ Mobilya mağazası</h3><div id="houseShop" class="house-shop"></div></section>
 <section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
@@ -199,7 +207,7 @@ body.night .muly-bottom-bar button.active{background:#5a3b55;color:#fff0f5}
 <section id="letters" class="card tab hidden"><h2>Kalbimizden mektuplar 💌</h2><p class="muted">Gönderdiğin mektubu sen görebilirsin; alıcısı yalnızca belirlediğin tarihten sonra okuyabilir.</p><form id="letterForm"><label>Başlık</label><input id="letterTitle" maxlength="150" required><label>Mektup</label><textarea id="letterContent" required></textarea><label>Açılacağı tarih ve saat</label><input id="unlockAt" type="datetime-local" required><button id="sendLetter">Mektubu gönder</button></form><div id="letterList"></div></section>
 
 <section id="firsts" class="card tab hidden"><h2>İlklerimiz 🌸</h2><p class="intro">İlk buluşmamız, ilk fotoğrafımız ve birlikte yaşadığımız bütün ilkler...</p><form id="firstForm"><label>İlkimizin adı</label><input id="firstTitle" maxlength="160" required placeholder="İlk buluşmamız"><label>Tarih</label><input id="firstDate" type="date" required><label>Hikâyesi</label><textarea id="firstDescription" maxlength="3000"></textarea><label>Fotoğraf (isteğe bağlı)</label><input id="firstPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>İlk anımızı kaydet</button></form><div id="firstList"></div></section>
-<section id="summary" class="card tab hidden"><h2>Bu ay bizim hikâyemiz 📊</h2><p class="intro">Bu ay eklenen anılar, tamamlanan hayaller, gönderilen kalpler ve paylaşılan ruh halleri.</p><div id="summaryDisplay" class="summary-grid"></div><h3>Geçen yıl bugün ♡</h3><div id="onThisDay" class="note"></div></section>
+<section id="achievements" class="card tab hidden"><h2>🏆 Aşk başarımlarımız</h2><p class="intro">Birlikte tamamladığınız görevleri görün ve ortak aşk parası ödüllerini bir kez alın. 💗</p><div id="mulyAchievementStatus" class="muted" role="status">Başarımlar yükleniyor…</div><div id="mulyAchievementGrid" class="muly-achievements"></div></section><section id="summary" class="card tab hidden"><h2>Bu ay bizim hikâyemiz 📊</h2><p class="intro">Bu ay eklenen anılar, tamamlanan hayaller, gönderilen kalpler ve paylaşılan ruh halleri.</p><div id="summaryDisplay" class="summary-grid"></div><h3>Geçen yıl bugün ♡</h3><div id="onThisDay" class="note"></div></section>
 <section id="hearts" class="card tab hidden"><h2>Bir kalp de benden sana 💗</h2><p class="intro">Dokunduğunda sevgiline bir kalp ve site içi bildirim gider.</p><button id="sendHeart" type="button" style="font-size:22px;padding:22px 28px">💗 Kalbimi gönder</button><div id="heartHistory"></div></section>
 <section id="notifications" class="card tab hidden"><h2>Kalbime gelenler 🔔</h2><p class="intro">Sevgilinden gelen kalpler burada birikir.</p><button type="button" id="markNotifications" class="secondary">Tümünü okundu işaretle</button><div id="notificationList"></div></section>
 </section>
@@ -767,6 +775,41 @@ window.mulyInitHouse=init;window.mulyRenderHouse=renderItems;window.mulyRotateHo
  const observer=new MutationObserver(()=>{document.body.classList.toggle('muly-app-mode',!app.classList.contains('hidden'));if(!app.classList.contains('hidden')&&!document.body.classList.contains('muly-initialized')){document.body.classList.add('muly-initialized');navigate('home');}if(app.classList.contains('hidden'))document.body.classList.remove('muly-initialized','muly-home','muly-menu');});
  observer.observe(app,{attributes:true,attributeFilter:['class']});
  if(!app.classList.contains('hidden'))navigate('home');
+})();
+</script><script>
+(()=>{
+ const defs=[
+  {id:'first_memory',icon:'📸',name:'İlk anımız',desc:'İlk ortak anınızı kaydedin',field:'memories',goal:1,coins:20},
+  {id:'ten_memories',icon:'📷',name:'Anı koleksiyoncusu',desc:'10 ortak anı biriktirin',field:'memories',goal:10,coins:100},
+  {id:'ten_hearts',icon:'💌',name:'Kalpten kalbe',desc:'10 kalp gönderin',field:'hearts',goal:10,coins:30},
+  {id:'hundred_hearts',icon:'💗',name:'100 kalp',desc:'100 kalbe ulaşın',field:'hearts',goal:100,coins:150},
+  {id:'thirty_days',icon:'🌷',name:'Bir ay beraber',desc:'30 günü geride bırakın',field:'days',goal:30,coins:50},
+  {id:'level_five',icon:'🏠',name:'Aşkımız büyüyor',desc:'Aşk seviyeniz 5 olsun',field:'level',goal:5,coins:80}
+ ];
+ const status=document.getElementById('mulyAchievementStatus'),root=document.getElementById('mulyAchievementGrid');
+ async function load(){
+  if(!window.db && typeof db==='undefined')return;
+  if(!coupleInfo?.couple_id)return;
+  status.textContent='Başarımlar kontrol ediliyor…';
+  const {data,error}=await db.rpc('muly_achievement_progress',{p_couple_id:coupleInfo.couple_id});
+  if(error){status.textContent='Başarımlar SQL kurulumu gerekli: '+error.message;return;}
+  status.textContent='Ödüller ortaktır; ikinizden biri aldığında ikinize de yansır.';
+  root.replaceChildren();
+  for(const d of defs){
+   const count=Math.max(0,Number(data[d.field])||0),claimed=(data.claimed||[]).includes(d.id),ready=count>=d.goal;
+   const card=document.createElement('div');card.className='muly-achievement'+(claimed?' done':'');
+   const icon=document.createElement('div');icon.className='medal';icon.textContent=d.icon;
+   const h=document.createElement('h3');h.textContent=d.name;
+   const desc=document.createElement('p');desc.textContent=d.desc;
+   const prog=document.createElement('div');prog.className='progress';const fill=document.createElement('i');fill.style.width=Math.min(100,count/d.goal*100)+'%';prog.append(fill);
+   const countEl=document.createElement('p');countEl.textContent=Math.min(count,d.goal)+' / '+d.goal+' · 🪙 '+d.coins;
+   const btn=document.createElement('button');btn.type='button';btn.disabled=claimed||!ready;btn.textContent=claimed?'✓ Ödül alındı':ready?'🎁 Ödülü al':'🔒 Henüz kilitli';
+   btn.onclick=async()=>{btn.disabled=true;const {error}=await db.rpc('muly_claim_achievement',{p_couple_id:coupleInfo.couple_id,p_id:d.id});if(error){status.textContent='Ödül alınamadı: '+error.message;}else{status.textContent='🎉 '+d.coins+' aşk parası ortak hesabınıza eklendi!';window.mulyRefreshHouse?.();}await load();};
+   card.append(icon,h,desc,prog,countEl,btn);root.append(card);
+  }
+ }
+ document.querySelectorAll('[data-tab="achievements"]').forEach(b=>b.addEventListener('click',load));
+ window.mulyLoadAchievements=load;
 })();
 </script></body>
 </html>
