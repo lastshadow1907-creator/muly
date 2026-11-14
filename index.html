@@ -99,6 +99,9 @@ body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .m
 
 /* Muly baby */
 .baby-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}.baby-stage{height:350px;border-radius:22px;background:radial-gradient(circle at 50% 45%,#fff,#fbe3e8 75%);overflow:hidden;position:relative}.baby-stage canvas{width:100%;height:100%;display:block}.baby-stats .mini{margin-bottom:9px}.baby-stat{height:9px;background:#eadde2;border-radius:20px;overflow:hidden;margin-top:8px}.baby-stat>i{display:block;height:100%;background:#c97896;border-radius:20px;transition:width .4s}.baby-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.baby-actions button{padding:12px 7px}.baby-name-controls{margin:12px 0}.baby-name-controls input{margin-bottom:8px}@media(max-width:650px){.baby-layout{grid-template-columns:1fr}.baby-stage{height:310px}}
+
+/* Muly ortak ev */
+.house-hud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}.house-hud .mini{padding:13px;text-align:center}.house-hud strong{font-size:20px}.house-stage{height:410px;border-radius:21px;overflow:hidden;background:linear-gradient(#fff3f4,#f7d9df);position:relative}.house-stage canvas{display:block;width:100%;height:100%}.house-shop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.house-product{border:1px solid var(--line);border-radius:15px;padding:13px;background:var(--soft)}.house-product button{width:100%;margin-top:8px;padding:9px}.house-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.house-controls button{padding:9px 12px}body.night .house-stage{background:#28243e}@media(max-width:560px){.house-hud{grid-template-columns:1fr 1fr}.house-stage{height:320px}.house-shop{grid-template-columns:1fr}}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -118,8 +121,9 @@ body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .m
 <section id="pair" class="card hidden"><div class="auth-mark">♡</div><h2>İkinizin alanını oluşturun 💌</h2><p>Biriniz çift alanı oluşturup davet kodunu diğerine göndersin. Diğeri kendi hesabından kodla katılsın.</p><button id="createPair">Davet kodu oluştur</button><hr style="border:0;border-top:1px solid #f5d7e3;margin:22px 0"><label>Davet kodu</label><input id="inviteInput" placeholder="Davet kodunu yaz"><button id="joinPair">Koda katıl</button></section>
 <section id="app" class="hidden"><div class="card" id="pushSettings"><h2>🔔 Telefon bildirimleri</h2><p class="intro">Sevgilinden kalp geldiğinde telefonunda bildirim görmek için bu cihazda izin ver.</p><button id="enablePush" type="button">🔔 Bildirimleri Aç</button><p class="muted" id="pushStatus" aria-live="polite">Henüz kontrol edilmedi.</p></div><div class="card relationship-card"><div class="section-kicker">♡ 14.03.2026 · 00:08 ♡</div><h2>Seninle geçen her saniye</h2><p class="intro">Birlikte yazdığımız hikâyenin başladığı o güzel andan beri…</p><div class="timer live-timer"><div><small>Gün</small><strong id="elapsed">—</strong></div><div><small>Saat</small><strong id="elapsedHours">—</strong></div><div><small>Dakika</small><strong id="elapsedMinutes">—</strong></div><div><small>Saniye</small><strong id="elapsedSeconds">—</strong></div></div><p class="anniversary-countdown">İlk yıl dönümümüze <strong id="remaining">—</strong></p><p class="muted" id="pairStatus"></p></div>
 <section class="card anniversary" id="anniversaryCard"><div class="section-kicker">14 MART · BİZİM GÜNÜMÜZ</div><h2 id="anniversaryTitle">İyi ki sen ♡</h2><p id="anniversaryText">Birlikte yazacağımız daha nice güzel yıllara...</p></section><div id="specialCelebrations"></div>
-<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
+<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary" data-tab="house">🏠 Evimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
 <section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
+<section id="house" class="card tab hidden"><h2>🏠 Muly Evimiz</h2><p class="intro">Birlikte aşk parası biriktirin, seviye atlayın ve evinizi döşeyin. Gerçek para kullanılmaz. 💗</p><div class="house-hud"><div class="mini">💗 Aşk seviyesi<strong id="houseLevel">—</strong></div><div class="mini">⭐ Aşk XP<strong id="houseXp">—</strong></div><div class="mini">🪙 Ortak para<strong id="houseCoins">—</strong></div></div><div class="house-stage" id="houseStage"><p class="muted" id="house3dStatus" style="padding:14px">3D ev hazırlanıyor…</p></div><div class="house-controls"><button type="button" id="houseDaily">🎁 Günlük ödülü al (+20 XP, +50 🪙)</button><button type="button" id="houseRotate" class="secondary">🔄 Kamerayı çevir</button></div><p class="muted" id="houseStatus" role="status">Ortak ev yükleniyor…</p><h3>🛍️ Mobilya mağazası</h3><div id="houseShop" class="house-shop"></div></section>
 <section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
 <section id="memories" class="card tab"><h2>Ortak anılarımız 📸</h2><form id="memoryForm"><label>Başlık</label><input id="memoryTitle" maxlength="150" required><label>Anı</label><textarea id="memoryDescription" required></textarea><label>Tarih</label><input id="memoryDate" type="date" required><label>Fotoğraf (isteğe bağlı, en fazla 10 MB)</label><input id="memoryPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Yeni anı ekle</button></form><div id="memoryList"></div></section>
 <section id="wishes" class="card tab hidden"><h2>Birlikte yapacaklarımız ✨</h2><form id="wishForm"><label>Hayalimiz</label><input id="wishTitle" maxlength="200" required><label>Detaylar</label><textarea id="wishNotes" placeholder="Nerede, nasıl, ne zaman?" maxlength="3000"></textarea><label>Hedef tarih (isteğe bağlı)</label><input id="wishDate" type="date"><label>Fotoğraf (isteğe bağlı)</label><input id="wishPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Listeye ekle</button></form><div id="wishList"></div></section>
@@ -584,6 +588,29 @@ if ('serviceWorker' in navigator) {
     }catch(e){$b('baby3dStatus').textContent='3D model yüklenemedi: '+e.message;modelReady=false;}
   }
 })();
+</script>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+let scene,camera,renderer,group,objects={},angle=.65,started=false,items=[];
+const stage=document.getElementById('houseStage');
+function box(w,h,d,color,x,y,z,parent=group){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.8}));m.position.set(x,y,z);parent.add(m);return m;}
+function ball(r,color,x,y,z,parent=group){const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,12),new THREE.MeshStandardMaterial({color}));m.position.set(x,y,z);parent.add(m);return m;}
+function furniture(id){const g=new THREE.Group();group.add(g);switch(id){
+case 'sofa':g.position.set(-1.2,0,-.7);box(1.4,.38,.65,0xd783a1,0,.48,0,g);box(1.4,.65,.18,0xb96a89,0,.85,-.32,g);box(.18,.52,.7,0xb96a89,-.71,.65,0,g);box(.18,.52,.7,0xb96a89,.71,.65,0,g);break;
+case 'bed':g.position.set(1.1,0,-.8);box(1.3,.3,1.6,0xf6d6e3,0,.35,0,g);box(1.35,.65,.16,0xc58ba4,0,.6,-.78,g);box(1.1,.09,.95,0xfff7f1,0,.55,.24,g);break;
+case 'crib':g.position.set(1.25,0,.75);box(.95,.22,.65,0xf8d8a6,0,.5,0,g);for(let x of [-.42,.42])for(let z of [-.28,.28])box(.07,.72,.07,0xc99569,x,.5,z,g);break;
+case 'tv':g.position.set(0,0,-1.75);box(.9,.55,.07,0x39374d,0,1.0,0,g);box(.65,.38,.015,0x7a91ba,0,1, .045,g);box(.1,.4,.1,0xa68d93,0,.57,0,g);break;
+case 'plant':g.position.set(-1.8,0,1.2);box(.38,.38,.38,0xd5a6a0,0,.24,0,g);ball(.34,0x73a88b,0,.72,0,g);break;
+case 'desk':g.position.set(.25,0,1.45);box(1.1,.1,.52,0xd5a5a1,0,.75,0,g);for(let x of [-.48,.48])box(.07,.72,.07,0x9e7581,x,.38,0,g);box(.5,.35,.05,0x555b86,0,1.04,-.1,g);break;
+}objects[id]=g;}
+function renderItems(list){items=list;if(!started)return;for(const obj of Object.values(objects))group.remove(obj);objects={};for(const id of list)furniture(id);}
+function init(){if(started)return;started=true;scene=new THREE.Scene();scene.background=new THREE.Color(0xffedf1);camera=new THREE.PerspectiveCamera(45,1,.1,100);renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;stage.append(renderer.domElement);document.getElementById('house3dStatus')?.remove();group=new THREE.Group();scene.add(group);
+box(5,.18,4,0xf2dfd4,0,-.1,0);box(.15,2.3,4,0xf6d8df,-2.5,1.05,0);box(5,2.3,.15,0xf9e7e5,0,1.05,-2);box(.8,.04,.8,0xfff5ed,0,0,.15);
+const light=new THREE.HemisphereLight(0xffffff,0xcaa9ac,2);scene.add(light);const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(4,8,6);scene.add(sun);
+const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(stage);resize();renderItems(items);
+function loop(){requestAnimationFrame(loop);camera.position.set(7*Math.sin(angle),5.5,7*Math.cos(angle));camera.lookAt(0,.45,0);renderer.render(scene,camera);}loop();}
+window.mulyInitHouse=init;window.mulyRenderHouse=renderItems;window.mulyRotateHouse=()=>{angle+=Math.PI/4;};
 </script>
 </body>
 </html>
@@ -1155,6 +1182,56 @@ if ('serviceWorker' in navigator) {
     }catch(e){$b('baby3dStatus').textContent='3D model yüklenemedi: '+e.message;modelReady=false;}
   }
 })();
+
+// Muly ortak ev: tüm satın alma ve ödüller sunucudaki güvenli RPC ile işlenir.
+(()=>{
+ const items=[{id:'sofa',label:'🛋️ Pembe koltuk',price:200,level:2},{id:'bed',label:'🛏️ Çift kişilik yatak',price:500,level:4},{id:'crib',label:'🍼 Bebek beşiği',price:750,level:6},{id:'tv',label:'📺 Televizyon',price:350,level:3},{id:'plant',label:'🪴 Çiçek',price:100,level:1},{id:'desk',label:'🎮 Oyun köşesi',price:1200,level:10}];
+ let state=null,houseCouple=null,channel=null,loading=false;
+ const h=id=>document.getElementById(id);
+ async function loadHouse(){
+  if(!db||!user||!coupleInfo?.couple_id||loading)return;
+  loading=true;
+  try{
+   const cid=coupleInfo.couple_id;
+   if(houseCouple!==cid){if(channel)await db.removeChannel(channel);houseCouple=cid;channel=db.channel('muly-house-'+cid).on('postgres_changes',{event:'*',schema:'public',table:'muly_houses',filter:'couple_id=eq.'+cid},()=>loadHouse()).subscribe();}
+   const {data,error}=await db.rpc('muly_house_state',{p_couple_id:cid});if(error)throw error;
+   state=typeof data==='string'?JSON.parse(data):data;
+   h('houseLevel').textContent=state.level;h('houseXp').textContent=state.xp+' / '+(state.level*100);h('houseCoins').textContent=state.coins;
+   h('houseStatus').textContent='💗 Ortak eviniz hazır! Eşyalar iki hesapta da görünür.';
+   const shop=h('houseShop');shop.replaceChildren();
+   for(const item of items){const owned=(state.items||[]).includes(item.id);const card=document.createElement('div');card.className='house-product';const name=document.createElement('strong');name.textContent=item.label;const info=document.createElement('p');info.className='muted';info.textContent='🪙 '+item.price+' · Seviye '+item.level;const btn=document.createElement('button');btn.type='button';btn.textContent=owned?'✓ Alındı':state.level<item.level?'🔒 Seviye '+item.level:state.coins<item.price?'🪙 Para yetersiz':'Satın al';btn.disabled=owned||state.level<item.level||state.coins<item.price;btn.onclick=()=>purchase(item.id,btn);card.append(name,info,btn);shop.append(card);}
+   window.mulyRenderHouse?.(state.items||[]);
+  }catch(e){h('houseStatus').textContent='❌ '+e.message;}finally{loading=false;}
+ }
+ async function purchase(id,btn){btn.disabled=true;try{const {error}=await db.rpc('muly_house_buy',{p_couple_id:coupleInfo.couple_id,p_item:id});if(error)throw error;await loadHouse();}catch(e){h('houseStatus').textContent='❌ '+e.message;btn.disabled=false;}}
+ h('houseDaily').onclick=async()=>{const b=h('houseDaily');b.disabled=true;try{const {error}=await db.rpc('muly_house_daily',{p_couple_id:coupleInfo.couple_id});if(error)throw error;await loadHouse();h('houseStatus').textContent='🎁 Günlük ödül alındı! +20 XP, +50 🪙';}catch(e){h('houseStatus').textContent='❌ '+e.message;}finally{b.disabled=false;}};
+ h('houseRotate').onclick=()=>window.mulyRotateHouse?.();
+ document.querySelector('[data-tab="house"]').addEventListener('click',()=>{loadHouse();window.mulyInitHouse?.();});
+ setInterval(()=>{if(user&&coupleInfo?.couple_id&&!h('house').classList.contains('hidden'))loadHouse();},12000);
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+let scene,camera,renderer,group,objects={},angle=.65,started=false,items=[];
+const stage=document.getElementById('houseStage');
+function box(w,h,d,color,x,y,z,parent=group){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.8}));m.position.set(x,y,z);parent.add(m);return m;}
+function ball(r,color,x,y,z,parent=group){const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,12),new THREE.MeshStandardMaterial({color}));m.position.set(x,y,z);parent.add(m);return m;}
+function furniture(id){const g=new THREE.Group();group.add(g);switch(id){
+case 'sofa':g.position.set(-1.2,0,-.7);box(1.4,.38,.65,0xd783a1,0,.48,0,g);box(1.4,.65,.18,0xb96a89,0,.85,-.32,g);box(.18,.52,.7,0xb96a89,-.71,.65,0,g);box(.18,.52,.7,0xb96a89,.71,.65,0,g);break;
+case 'bed':g.position.set(1.1,0,-.8);box(1.3,.3,1.6,0xf6d6e3,0,.35,0,g);box(1.35,.65,.16,0xc58ba4,0,.6,-.78,g);box(1.1,.09,.95,0xfff7f1,0,.55,.24,g);break;
+case 'crib':g.position.set(1.25,0,.75);box(.95,.22,.65,0xf8d8a6,0,.5,0,g);for(let x of [-.42,.42])for(let z of [-.28,.28])box(.07,.72,.07,0xc99569,x,.5,z,g);break;
+case 'tv':g.position.set(0,0,-1.75);box(.9,.55,.07,0x39374d,0,1.0,0,g);box(.65,.38,.015,0x7a91ba,0,1, .045,g);box(.1,.4,.1,0xa68d93,0,.57,0,g);break;
+case 'plant':g.position.set(-1.8,0,1.2);box(.38,.38,.38,0xd5a6a0,0,.24,0,g);ball(.34,0x73a88b,0,.72,0,g);break;
+case 'desk':g.position.set(.25,0,1.45);box(1.1,.1,.52,0xd5a5a1,0,.75,0,g);for(let x of [-.48,.48])box(.07,.72,.07,0x9e7581,x,.38,0,g);box(.5,.35,.05,0x555b86,0,1.04,-.1,g);break;
+}objects[id]=g;}
+function renderItems(list){items=list;if(!started)return;for(const obj of Object.values(objects))group.remove(obj);objects={};for(const id of list)furniture(id);}
+function init(){if(started)return;started=true;scene=new THREE.Scene();scene.background=new THREE.Color(0xffedf1);camera=new THREE.PerspectiveCamera(45,1,.1,100);renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;stage.append(renderer.domElement);document.getElementById('house3dStatus')?.remove();group=new THREE.Group();scene.add(group);
+box(5,.18,4,0xf2dfd4,0,-.1,0);box(.15,2.3,4,0xf6d8df,-2.5,1.05,0);box(5,2.3,.15,0xf9e7e5,0,1.05,-2);box(.8,.04,.8,0xfff5ed,0,0,.15);
+const light=new THREE.HemisphereLight(0xffffff,0xcaa9ac,2);scene.add(light);const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(4,8,6);scene.add(sun);
+const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(stage);resize();renderItems(items);
+function loop(){requestAnimationFrame(loop);camera.position.set(7*Math.sin(angle),5.5,7*Math.cos(angle));camera.lookAt(0,.45,0);renderer.render(scene,camera);}loop();}
+window.mulyInitHouse=init;window.mulyRenderHouse=renderItems;window.mulyRotateHouse=()=>{angle+=Math.PI/4;};
 </script>
 </body>
 </html>
