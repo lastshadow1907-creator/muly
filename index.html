@@ -435,6 +435,595 @@ if ('serviceWorker' in navigator) {
   function renderBaby() {
     if (!baby) return;
     $b('babyNameDisplay').textContent = baby.name === 'Mini Muly' ? 'İsmini bekliyorum 🍼' : baby.name;
+    $b('babyInfo').textContent = (baby.gender === 'girl' ? '👧 Kız' : '👦 Erkek') + ' · ⭐ Seviye ' + baby.level + ' · ' + baby.xp + ' XP · ' + (baby.level>=5?'🚶 İlk adımlar':baby.level>=3?'🐾 Emekleme':'🍼 Minik bebek');
+    // İki hesap da isim düzenleyebilir.
+    $b('babyNameControls').classList.toggle('hidden', !user || !coupleInfo);
+    const needs=[['hunger',35,'🍼 Karnım acıktı!'],['energy',30,'😴 Uykum geldi!'],['hygiene',30,'🛁 Banyo yapmak istiyorum!'],['happiness',30,'🥺 Benimle oynar mısınız?']];
+    const urgent=needs.filter(([key,limit])=>baby[key]<limit).sort((a,b)=>baby[a[0]]-baby[b[0]])[0];
+    $b('babySpeech').textContent=urgent?urgent[2]:(baby.happiness>75?'🥰 Sizi çok seviyorum!':'👶 Birlikte oyun oynayalım mı?');
+    const xpProgress=baby.xp%100;
+    $b('babyXp').innerHTML='';
+    const xpText=document.createElement('div');xpText.textContent='⭐ Sonraki seviyeye '+(100-xpProgress)+' XP';
+    const xpTrack=document.createElement('div'),xpFill=document.createElement('i');xpFill.style.width=xpProgress+'%';xpTrack.append(xpFill);$b('babyXp').append(xpText,xpTrack);
+    const labels = [['hunger','🍼 Tokluk'],['happiness','💗 Mutluluk'],['energy','⚡ Enerji'],['hygiene','🛁 Temizlik']];
+    const root = $b('babyStats'); root.replaceChildren();
+    for (const [key,label] of labels) {
+      const box = document.createElement('div'); box.className='mini';
+      const t=document.createElement('div');t.textContent=label+' · '+baby[key]+'/100';
+      const bar=document.createElement('div');bar.className='baby-stat';
+      const fill=document.createElement('i');fill.style.width=clamp(baby[key])+'%';bar.append(fill);box.append(t,bar);root.append(box);
+    }
+  }
+  let lastDecayCheck=0;
+  async function applyTimeDecay(record){
+    // Zamanla azalma yalnızca aktif oturumlarda hesaplanır.
+    const elapsed=Math.floor((Date.now()-new Date(record.updated_at).getTime())/3600000);
+    if(elapsed<1 || !Number.isFinite(elapsed))return record;
+    const hours=Math.min(elapsed,48);
+    const changes={hunger:Math.max(0,record.hunger-hours*3),energy:Math.max(0,record.energy-hours*2),hygiene:Math.max(0,record.hygiene-hours*2),happiness:Math.max(0,record.happiness-hours*2)};
+    const nextTime=new Date(new Date(record.updated_at).getTime()+hours*3600000).toISOString();
+    const {data,error}=await db.from('muly_babies').update({...changes,updated_at:nextTime}).eq('id',record.id).eq('updated_at',record.updated_at).select().maybeSingle();
+    if(error)console.warn('Bebek ihtiyaç güncelleme:',error);
+    return data||record;
+  }
+  async function loadBaby() {
+    if (!db || !user || !coupleInfo?.couple_id) return;
+    const id=coupleInfo.couple_id;
+    const {data,error}=await db.from('muly_babies').select('*').eq('couple_id',id).maybeSingle();
+    if(error){$b('babyActionStatus').textContent='❌ '+error.message;return;}
+    if(data){baby=data;renderBaby();if(Date.now()-lastDecayCheck>60000){lastDecayCheck=Date.now();const updated=await applyTimeDecay(data);if(updated!==data){baby=updated;renderBaby();}}return;}
+    // İlk açan ortak bebeği oluşturur; UNIQUE couple_id iki eşzamanlı oluşturmayı önler.
+    const {error:insertError}=await db.from('muly_babies').insert({couple_id:id});
+    if(insertError && insertError.code!=='23505'){$b('babyActionStatus').textContent='❌ '+insertError.message;return;}
+    const result=await db.from('muly_babies').select('*').eq('couple_id',id).maybeSingle();
+    if(result.data){baby=result.data;renderBaby();}
+  }
+  async function syncBaby(){
+    if (!db || !user || !coupleInfo?.couple_id) return;
+    if(babyCouple!==coupleInfo.couple_id){
+      if(babyChannel) await db.removeChannel(babyChannel);
+      babyCouple=coupleInfo.couple_id;
+      babyChannel=db.channel('muly-baby-'+babyCouple).on('postgres_changes',{event:'*',schema:'public',table:'muly_babies',filter:'couple_id=eq.'+babyCouple},()=>loadBaby()).subscribe();
+    }
+    await loadBaby();
+    if(!modelReady) init3D();
+  }
+  async function act(action){
+    if(!baby || busy)return;
+    busy=true;
+    document.querySelectorAll('[data-baby-action]').forEach(b=>b.disabled=true);
+    const delta={feed:{hunger:20,energy:3},wash:{hygiene:25,happiness:4},sleep:{energy:25,hunger:-5},play:{happiness:20,energy:-8,hunger:-5}}[action];
+    animateAction=action;
+    try{
+      const next={};for(const key of ['hunger','happiness','energy','hygiene'])next[key]=clamp(baby[key]+(delta[key]||0));
+      next.xp=baby.xp+10;next.level=Math.floor(next.xp/100)+1;next.updated_at=new Date().toISOString();
+      const {data,error}=await db.from('muly_babies').update(next).eq('id',baby.id).select().single();
+      if(error)throw error;
+      baby=data;renderBaby();
+      $b('babyActionStatus').textContent={feed:'🍼 Karnı doydu!',wash:'🛁 Mis gibi temiz!',sleep:'😴 Dinlendi!',play:'🧸 Çok eğlendi!'}[action]+' +10 XP';
+    }catch(e){$b('babyActionStatus').textContent='❌ '+e.message;}
+    finally{busy=false;document.querySelectorAll('[data-baby-action]').forEach(b=>b.disabled=false);setTimeout(()=>animateAction='idle',1500);}
+  }
+  document.querySelectorAll('[data-baby-action]').forEach(b=>b.addEventListener('click',()=>act(b.dataset.babyAction)));
+  $b('babySaveName').onclick=async()=>{
+    const name=$b('babyNameInput').value.trim();if(!name||name.length>35||!baby)return;
+    if(!user || !coupleInfo)return;
+    const {data,error}=await db.from('muly_babies').update({name,updated_at:new Date().toISOString()}).eq('id',baby.id).select().single();
+    if(error){$b('babyActionStatus').textContent='❌ '+error.message;return;}
+    baby=data;renderBaby();$b('babyActionStatus').textContent='💗 Bebeğimizin adı '+name+' oldu!';
+  };
+  document.querySelector('[data-tab="baby"]').addEventListener('click',syncBaby);
+  setInterval(()=>{if(user && coupleInfo?.couple_id && !$b('baby').classList.contains('hidden'))syncBaby();},8000);
+  async function init3D(){
+    modelReady=true;
+    try{
+      const THREE=await import('https://esm.sh/three@0.170.0');
+      const scene=new THREE.Scene();
+      const camera=new THREE.PerspectiveCamera(37,1,.1,100);camera.position.set(0,1.6,7.8);camera.lookAt(0,.65,0);
+      const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+      stage.append(renderer.domElement);$b('baby3dStatus').remove();
+      scene.add(new THREE.HemisphereLight(0xffffff,0xe8a6a6,2.4));
+      const light=new THREE.DirectionalLight(0xffffff,2);light.position.set(3,6,5);scene.add(light);
+      const skin=new THREE.MeshStandardMaterial({color:0xffc9a8,roughness:.85});
+      const hair=new THREE.MeshStandardMaterial({color:0x674333,roughness:1});
+      const dark=new THREE.MeshStandardMaterial({color:0x332c36});
+      const pink=new THREE.MeshStandardMaterial({color:0xf39aa7});
+      const diaper=new THREE.MeshStandardMaterial({color:0xfff8f3,roughness:.92});
+      const shine=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.25});
+      const blush=new THREE.MeshStandardMaterial({color:0xeaa0a5,roughness:.9});
+      const root=new THREE.Group();scene.add(root);
+      function ball(parent,r,x,y,z,mat,sx=1,sy=1,sz=1){const o=new THREE.Mesh(new THREE.SphereGeometry(r,24,16),mat);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;}
+      ball(root,.85,0,1.65,0,skin,1,1.02,.87); // head
+      ball(root,.62,0,.35,0,skin,.83,1.08,.68); // torso
+      ball(root,.48,0,-.25,0,diaper,1.1,.65,.8); // anatomik ayrıntısız alt vücut
+      ball(root,.28,0,.42,.38,skin,1.15,.95,.45); // göbek
+      ball(root,.032,0,.43,.56,blush,.8,.7,.4); // göbek deliği
+      for(const x of [-1,1]){
+        ball(root,.18,x*.8,1.65,.02,skin,.8,1.25,.5); // ears
+        ball(root,.11,x*.33,1.74,.71,dark,.75,1.12,.55); // eyes
+        ball(root,.035,x*.34,1.79,.78,shine);
+        ball(root,.13,x*.37,1.47,.68,blush,1,.45,.2); // yanak
+        ball(root,.19,x*.4,1.35,.66,pink,1,.45,.25);
+      }
+      ball(root,.11,0,1.53,.81,skin,.8,.65,.65); // nose
+      const mouth=ball(root,.14,0,1.25,.76,pink,1,.32,.4); // mouth
+      ball(root,.46,0,2.28,-.03,hair,1,.27,.8);
+      ball(root,.12,-.22,2.40,.12,hair,1.3,.75,1);
+      ball(root,.12,.20,2.41,.12,hair,1.3,.75,1);
+      const arms=[],legs=[];
+      for(const x of [-1,1]){
+        const arm=new THREE.Group();arm.position.set(x*.53,.67,0);root.add(arm);
+        ball(arm,.2,x*.25,-.22,0,skin,.82,1.7,.8);arms.push(arm);
+        const leg=new THREE.Group();leg.position.set(x*.25,-.55,0);root.add(leg);
+        ball(leg,.22,0,-.26,.06,skin,1,1.6,.92);
+        ball(leg,.23,0,-.56,.22,skin,1.2,.6,1.5);legs.push(leg);
+      }
+      function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
+      resize();new ResizeObserver(resize).observe(stage);
+      const clock=new THREE.Clock();
+      function frame(){
+        requestAnimationFrame(frame);
+        const t=clock.getElapsedTime(), level=Math.max(1,Number(baby?.level)||1);
+        const crawl=level>=3&&level<5, walk=level>=5;
+        // Seviye yükseldikçe model kalıcı olarak büyür; veritabanındaki ortak level kullanılır.
+        const growth=1+Math.min(level-1,9)*.055;
+        root.scale.setScalar(growth);
+        const speed=animateAction==='play'?7:walk?3.7:crawl?4.8:2.2;
+        const stride=Math.sin(t*speed);
+        root.rotation.order='YXZ';
+        root.rotation.x=crawl?-.24:0;
+        root.rotation.y=.12*Math.sin(t*.6);
+        root.position.x=(crawl?.32*Math.sin(t*.55):walk?.19*Math.sin(t*.75):0);
+        root.position.y=(crawl?-.18:walk?.04:0)+.045*Math.sin(t*(walk?speed*2:2.2));
+        mouth.scale.y=(baby?.hunger<35?.72:.32)+.12*Math.abs(Math.sin(t*2.1));
+        arms.forEach((a,i)=>{a.rotation.z=(i?1:-1)*(.12+Math.sin(t*speed+i*Math.PI)*.2);a.rotation.x=(crawl?.65:walk?.32:.08)*Math.sin(t*speed+i*Math.PI);});
+        legs.forEach((l,i)=>{l.rotation.x=(crawl?.48:walk?.44:.13)*Math.sin(t*speed+i*Math.PI);});
+        renderer.render(scene,camera);
+      }
+      frame();
+    }catch(e){$b('baby3dStatus').textContent='3D model yüklenemedi: '+e.message;modelReady=false;}
+  }
+})();
+</script>
+</body>
+</html>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fff0f5"><title>Muly ❤️ Olcay | Bizim Dünyamız</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#654554;--rose:#ad637b;--rose-dark:#8d405e;--cream:#fffaf4;--line:#efdde0;--blush:#f6e3e7;--soft:#fff8f8;font-family:'DM Sans',sans-serif;color:var(--ink);background:#fcf5f2}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 10% 12%,#fbe5e9 0,transparent 33%),radial-gradient(ellipse at 90% 30%,#f9ece1 0,transparent 40%),#fcf7f3;overflow-x:hidden}body:before,body:after{content:'✿';position:fixed;color:#d8a5b0;opacity:.14;pointer-events:none;font-size:250px;z-index:0}body:before{top:13%;left:-100px;transform:rotate(-25deg)}body:after{right:-95px;bottom:-80px;transform:rotate(20deg)}header{position:relative;z-index:2;max-width:1080px;margin:auto;padding:24px 28px;display:flex;justify-content:space-between;align-items:center;gap:12px}h1,h2,h3{font-family:'Playfair Display',Georgia,serif}h1{font-size:31px;margin:0;color:var(--rose-dark);letter-spacing:.2px}h1 span{font-family:'Great Vibes',cursive;font-size:43px;font-weight:400}h2{margin:0 0 15px;font-size:clamp(23px,3.4vw,30px);font-weight:500;color:#754759}h3{font-size:19px}main{position:relative;z-index:1;max-width:940px;margin:0 auto 90px;padding:0 22px}.hero{text-align:center;padding:24px 12px 32px;position:relative}.hero .eyebrow{letter-spacing:4px;text-transform:uppercase;font-size:11px;font-weight:700;color:#af7d8c}.hero h2{font-family:'Great Vibes',cursive;font-size:clamp(60px,11vw,105px);font-weight:400;line-height:1.05;margin:12px 0 5px;color:#a65371}.hero p{margin:0;color:#98747e;font-size:14px}.ornament{display:flex;align-items:center;gap:15px;justify-content:center;color:#b47a8e;margin:22px auto 0;max-width:340px}.ornament:before,.ornament:after{content:'';height:1px;background:#e4bfc7;flex:1}.ornament span{font-size:21px}.card{background:rgba(255,253,250,.91);border:1px solid rgba(223,181,190,.65);border-radius:25px;padding:30px 32px;margin:18px 0;box-shadow:0 12px 40px #8b4d5810,0 2px 5px #8b4d5805;backdrop-filter:blur(7px)}.card-heading{display:flex;align-items:center;gap:12px;margin-bottom:8px}.flower{font-size:23px;color:#b5788d}.intro{color:#967681;font-size:14px;line-height:1.7}input,textarea,button{font:inherit}input,textarea{width:100%;padding:14px 15px;border:1px solid #e7cdd1;border-radius:13px;margin:7px 0 15px;background:#fffaf9;color:#694858;outline:none;transition:border-color .2s,box-shadow .2s}input:focus,textarea:focus{border-color:#c8879b;box-shadow:0 0 0 3px #eecfd980}textarea{min-height:116px;resize:vertical}button{background:linear-gradient(120deg,#b96d86,#99526d);color:#fff;border:0;border-radius:14px;padding:13px 21px;cursor:pointer;box-shadow:0 6px 15px #a6537124;transition:transform .18s,filter .18s}button:hover{transform:translateY(-2px);filter:brightness(1.04)}button.secondary{background:#f8e9eb;color:#8b4b64;box-shadow:none;border:1px solid #ead1d7}button:disabled{opacity:.5;cursor:wait}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.muted{color:#9b7e89;font-size:14px;line-height:1.65}.hidden{display:none!important}.tabs{display:flex;gap:10px;flex-wrap:wrap}.tabs button{flex:1;min-width:130px}.item{padding:18px 0;border-top:1px solid #f1e0e3;overflow-wrap:anywhere}.item:first-child{border-top:0}.item h3{margin:0 0 8px}.item p{white-space:pre-wrap;margin:8px 0;line-height:1.7}.timer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.timer>div{background:linear-gradient(135deg,#fff2f3,#fbe9e7);padding:25px 16px;border:1px solid #f2dce0;border-radius:19px;text-align:center}.timer strong{display:block;font-family:'Playfair Display',serif;font-size:clamp(24px,4vw,35px);font-weight:500;color:#a75572;margin-top:8px}#notice{padding:15px 18px;border-radius:15px;background:#fff0f3;border:1px solid #eecdd6;margin:12px 0;white-space:pre-wrap}small{color:#987784}label{display:block;font-size:13px;font-weight:700;margin-top:8px;color:#805968}.section-kicker{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#bc8594;font-weight:700}.date-ribbon{display:inline-block;margin-top:12px;background:#f7e7e8;border:1px solid #ebcdd3;padding:9px 20px;border-radius:100px;color:#995f72;font-size:12px;letter-spacing:1.2px}.footer{text-align:center;color:#ae8b96;font-size:12px;padding:28px 10px 12px}.footer strong{font-family:'Great Vibes',cursive;font-size:25px;font-weight:400;color:#b06b83}#auth,#pair,#setup{max-width:600px;margin:10px auto 35px}#auth h2,#pair h2{text-align:center}.auth-mark{text-align:center;font-size:34px;margin-bottom:12px}.tab{animation:rise .35s ease}@keyframes rise{from{opacity:.5;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@media(max-width:600px){header{padding:17px 18px}h1{font-size:24px}h1 span{font-size:35px}main{padding:0 14px}.card{padding:22px 18px;border-radius:21px}.hero{padding:15px 0 24px}.timer{grid-template-columns:1fr}.row>*{flex-basis:100%}.tabs button{min-width:100%;}.hero h2{font-size:67px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* Muly gece modu */
+.theme-toggle{white-space:nowrap;padding:11px 16px}.header-actions{display:flex;gap:9px;align-items:center}.night-message{display:none;text-align:center;margin:12px auto 25px;max-width:650px;padding:22px 16px;color:#ffe7ca;font-family:'Playfair Display',Georgia,serif;font-size:clamp(21px,4vw,34px);line-height:1.5;text-shadow:0 0 22px #f7d4a94d;animation:rise .6s ease}.night-message span{display:block;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:2px;color:#d3bdd3;margin-top:8px}.stars{display:none;position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff5d7;box-shadow:0 0 8px #ffe6a9;animation:twinkle 3s ease-in-out infinite alternate}@keyframes twinkle{from{opacity:.15;transform:scale(.7)}to{opacity:1;transform:scale(1.5)}}
+body.night{--ink:#e9dce6;--rose:#e9adc6;--rose-dark:#f5c6d9;--cream:#161a31;--line:#51435c;--blush:#312a47;--soft:#26253d;background:radial-gradient(ellipse at 20% 12%,#303252 0,transparent 42%),radial-gradient(ellipse at 90% 75%,#34243e 0,transparent 48%),#101426;color:#e9dce6}body.night:before,body.night:after{color:#d5a5c2;opacity:.08}body.night .stars,body.night .night-message{display:block}body.night h1,body.night h2,body.night h3{color:#f8d7e3}body.night .hero h2{color:#f5b8d3}body.night .hero p,body.night .hero .eyebrow,body.night .intro,body.night .muted,body.night small,body.night .footer{color:#c6b5c9}body.night .card{background:rgba(28,29,51,.91);border-color:#57465e;box-shadow:0 15px 45px #05071340}body.night .timer>div{background:linear-gradient(135deg,#34314e,#2b2845);border-color:#584760}body.night .timer strong{color:#ffd1df}body.night input,body.night textarea{background:#22243d;color:#f7e9f2;border-color:#65506a}body.night input::placeholder,body.night textarea::placeholder{color:#b5a1b5}body.night label{color:#e4bfd0}body.night .item{border-color:#53435b}body.night .section-kicker,body.night .date-ribbon{color:#f1bcd0}body.night .date-ribbon{background:#332a43;border-color:#66506b}body.night button.secondary{background:#39304d;color:#f6d7e6;border-color:#715774}body.night #notice{background:#3c2d46;border-color:#805c78;color:#f9e1e9}body.night .ornament{color:#e8b8ce}body.night .ornament:before,body.night .ornament:after{background:#68536b}body.night .footer strong{color:#ffd0e0}@media(max-width:600px){.header-actions{gap:6px}.theme-toggle{padding:10px 12px;font-size:13px}#logout{padding:10px 12px;font-size:13px}}
+
+/* Muly v2 */
+.feature-nav{display:flex;flex-wrap:wrap;gap:9px}.feature-nav button{flex:1 1 140px;padding:11px 12px;font-size:13px}.feature-nav button.active{background:linear-gradient(120deg,#b96d86,#99526d);color:white}.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}.mini{background:var(--soft);border:1px solid var(--line);padding:18px;border-radius:18px}.mini strong{display:block;font-family:'Playfair Display',serif;font-size:22px;margin:8px 0;color:var(--rose-dark)}.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}.photo-card{background:var(--soft);border:1px solid var(--line);border-radius:17px;padding:12px;overflow:hidden}.photo-card img,.item-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block;margin-bottom:10px}.sky-box{position:relative;min-height:340px;border-radius:24px;overflow:hidden;background:radial-gradient(circle at 50% 115%,#5b436e 0,transparent 55%),linear-gradient(160deg,#111832,#28254a 70%,#17162c);border:1px solid #716080}.sky-star{position:absolute;background:none;border:0;box-shadow:none;color:#ffeab8;text-shadow:0 0 12px #ffdd9b;cursor:pointer;font-size:25px;padding:5px;transform:translate(-50%,-50%)}.sky-star:hover{transform:translate(-50%,-50%) scale(1.25)}.sky-caption{position:absolute;bottom:16px;left:12px;right:12px;text-align:center;color:#f5d9e9;font-size:13px;pointer-events:none}.pill{display:inline-block;padding:7px 12px;border-radius:99px;background:var(--blush);color:var(--rose-dark);font-size:12px;margin:4px}.note{padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--soft);margin:10px 0;white-space:pre-wrap}.compact-form{margin-top:12px}select{width:100%;padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--ink);margin:7px 0 15px}body.night .mini,body.night .photo-card,body.night .note,body.night select{background:#29263f;border-color:#64526b;color:#f3ddea}body.night .pill{background:#493650;color:#ffe0ec}body.night .feature-nav button.active{background:#a45d82;color:white}.anniversary{background:linear-gradient(135deg,#f7e1e6,#fff9ed);text-align:center}.anniversary h2{font-family:'Great Vibes',cursive;font-size:clamp(40px,8vw,70px)}body.night .anniversary{background:linear-gradient(135deg,#332944,#232c4c)}.image-help{font-size:12px;color:var(--rose)}
+
+/* Muly 3.0: romantik mikro-etkileşimler */
+#introCurtain{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 40%,#fff4f3,#eac8d5);display:grid;place-items:center;animation:introFade .9s ease 1.5s forwards;pointer-events:none}#introCurtain div{text-align:center;color:#a15374;font-family:'Great Vibes',cursive;font-size:clamp(55px,12vw,105px);animation:introPulse 1.5s ease}#introCurtain small{display:block;font:13px 'DM Sans',sans-serif;letter-spacing:3px;color:#98657c}@keyframes introFade{to{opacity:0;visibility:hidden}}@keyframes introPulse{0%{opacity:0;transform:scale(.7)}65%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+body.night.rainy:after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(105deg,transparent 0 29px,#b7c6ed1a 30px,#b7c6ed1a 31px,transparent 33px 66px);animation:rainfall 1.8s linear infinite;font-size:0} @keyframes rainfall{to{background-position:-65px 200px}}
+.shooting-star{position:fixed;top:12%;left:70%;width:110px;height:2px;transform:rotate(-30deg);background:linear-gradient(90deg,transparent,#fff5c8);filter:drop-shadow(0 0 6px #fff3b2);z-index:1;pointer-events:none;animation:shoot 2.2s ease-in forwards}@keyframes shoot{from{opacity:0;translate:90px -70px}25%{opacity:1}to{opacity:0;translate:-300px 260px}}
+.heart-burst{position:fixed;pointer-events:none;z-index:40;font-size:27px;animation:heartFloat 1.5s ease-out forwards}@keyframes heartFloat{to{transform:translateY(-180px) rotate(20deg);opacity:0}}
+.celebration{padding:22px;border:1px solid var(--line);border-radius:22px;background:var(--soft);margin:12px 0;text-align:center}.celebration strong{font-family:'Playfair Display',serif;font-size:23px;color:var(--rose-dark)}
+#notifCount{display:inline-block;min-width:20px;padding:2px 5px;background:#b85778;color:white;border-radius:99px;font-size:11px} .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.summary-grid .mini{text-align:center}.summary-grid strong{font-size:27px}
+@media(prefers-reduced-motion:reduce){#introCurtain{display:none}.shooting-star,.heart-burst{display:none}body.night.rainy:after{animation:none}}
+
+/* Muly romantic refresh — presentation only, original feature IDs and handlers preserved */
+:root{--ink:#583d4b;--rose:#a75a74;--rose-dark:#7d3855;--cream:#fffaf7;--line:#eed9df;--blush:#f9e5e9;--soft:#fff8f8}
+body{background:radial-gradient(ellipse at 8% 4%,#fbe1e9 0,transparent 37%),radial-gradient(ellipse at 92% 18%,#f8e9d8 0,transparent 39%),linear-gradient(160deg,#fffaf6,#fdf0f1 55%,#fff9f6);}
+header{max-width:1180px;padding:20px 28px;position:sticky;top:0;z-index:15;background:rgba(255,248,247,.83);backdrop-filter:blur(20px);border-bottom:1px solid #e9d4db80;border-radius:0 0 22px 22px}
+header h1 span{font-size:48px}main{max-width:1080px}.hero{padding:52px 12px 34px}.hero h2{font-size:clamp(66px,10vw,112px);text-shadow:0 8px 35px #e7b7c577}.hero .eyebrow{font-size:11px;letter-spacing:5px}.hero p{font-size:15px}.date-ribbon{font-weight:700;background:#fff8f8b8;box-shadow:0 8px 22px #ae718416}
+.card{border-radius:27px;border-color:#e7cbd3b5;background:rgba(255,253,251,.9);box-shadow:0 16px 45px #8b4d5810,0 3px 10px #8b4d5806;padding:30px 34px}
+.card h2{letter-spacing:-.45px}.relationship-card{position:relative;overflow:hidden;text-align:center;background:linear-gradient(130deg,#fffafa,#fff1f4 55%,#fff9f0)}.relationship-card:after{content:'♡';position:absolute;right:20px;top:-45px;font-size:210px;color:#cf81931a;pointer-events:none}.relationship-card h2{font-family:'Great Vibes',cursive;font-size:clamp(42px,7vw,68px);margin:10px 0}.relationship-card .intro{margin-bottom:22px}
+.live-timer{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;position:relative;z-index:1}.live-timer>div{padding:18px 9px;background:#fffdfcbd;box-shadow:0 6px 22px #c889a01a}.live-timer strong{font-family:'DM Sans',sans-serif;font-size:clamp(24px,4vw,40px);font-weight:700;font-variant-numeric:tabular-nums}.anniversary-countdown{font-size:14px;color:#926879;margin:22px 0 8px}.anniversary-countdown strong{color:#873e5b}
+.feature-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.feature-nav button{min-width:0;min-height:53px;border:1px solid #edd3db;border-radius:15px;background:#fff8f9;color:#87516a;box-shadow:none;font-weight:600;transition:transform .2s,background .2s,box-shadow .2s}.feature-nav button:hover{box-shadow:0 6px 20px #9e5d7820}.feature-nav button.active{box-shadow:0 8px 20px #9e5d7833}
+button{font-weight:600}input,textarea,select{background:#fffdfc}input:focus,textarea:focus{outline:none}.tab{animation:rise .4s ease}.footer{padding:32px 10px}
+body.night header{background:rgba(20,21,39,.88);border-color:#55445b}body.night .relationship-card{background:linear-gradient(130deg,#30243c,#252941 65%,#372c42)}body.night .live-timer>div{background:#3a304b}body.night .anniversary-countdown{color:#dec1d0}body.night .anniversary-countdown strong{color:#ffd3e1}body.night .feature-nav button{background:#352b43;color:#f5d5e4;border-color:#6a526e}
+@media(max-width:760px){.feature-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.card{padding:24px 20px}.hero{padding:32px 8px 26px}}
+@media(max-width:480px){header{padding:12px 15px}.hero h2{font-size:62px}.feature-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.feature-nav button{font-size:12px;min-height:49px;padding:10px 7px}.live-timer{gap:7px}.live-timer>div{padding:14px 3px;border-radius:14px}.live-timer strong{font-size:25px}.live-timer small{font-size:11px}.card{padding:21px 16px}.relationship-card h2{font-size:45px}}
+
+/* Muly × Olcay — yeni romantik başlık; mevcut uygulama işlevlerine dokunmaz */
+.love-hero{isolation:isolate;overflow:hidden;margin:8px auto 20px;padding:45px 16px 38px;border:1px solid #f0d6dd;border-radius:32px;background:radial-gradient(circle at 50% 0%,#ffe7ee 0,transparent 65%),linear-gradient(155deg,rgba(255,255,255,.85),rgba(255,242,242,.7));box-shadow:0 16px 46px #9e5b7520}
+.love-hero-glow{position:absolute;inset:auto 0 -82px;text-align:center;font-size:290px;line-height:1;color:#e9b6c5;opacity:.17;z-index:-1;pointer-events:none}
+.love-names{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(9px,2.5vw,24px);margin:14px auto 13px;color:#91435e}
+.love-name{font-family:'Great Vibes',cursive;font-size:clamp(58px,10vw,105px);line-height:1.25;text-shadow:0 4px 22px #b96b8a25}
+.love-heart{font-size:clamp(26px,4vw,43px);color:#d36d8d;filter:drop-shadow(0 3px 8px #d36d8d55);animation:loveBeat 2.4s ease-in-out infinite}
+.love-quote{max-width:460px;margin:0 auto!important;line-height:1.8!important;font-size:clamp(13px,2.5vw,16px)!important;color:#906476!important}
+.love-hero .date-ribbon{margin-top:22px;font-weight:700;letter-spacing:1.7px;background:#fff9f9;border-color:#e9cad2}
+.love-hero .date-ribbon span{padding:0 8px;color:#d58ca2}
+@keyframes loveBeat{0%,100%{transform:scale(1)}15%{transform:scale(1.17)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+body.night .love-hero{background:radial-gradient(circle at 50% 0%,#5a3754 0,transparent 65%),linear-gradient(155deg,#29233e,#201d33);border-color:#76516c}
+body.night .love-names{color:#ffd4e3}body.night .love-heart{color:#ff9fbd}body.night .love-quote{color:#e4c1d0!important}body.night .love-hero .date-ribbon{background:#3b2b44;border-color:#78546d}
+@media(max-width:600px){.love-hero{padding:36px 12px 30px;border-radius:25px}.love-name{font-size:clamp(50px,13vw,75px)}.love-names{gap:9px}}
+@media(prefers-reduced-motion:reduce){.love-heart{animation:none}}
+
+/* Muly mobile overflow fix — layout only */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+header,main,#app,.card,.tab,.mini,.note,.item{min-width:0;max-width:100%}
+header{width:100%;box-sizing:border-box}
+.header-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}
+.header-actions button{white-space:normal;overflow-wrap:anywhere}
+.row,.tabs,.feature-nav,.timer,.live-timer,.feature-grid,.photo-grid,.summary-grid{min-width:0;max-width:100%}
+.row>*{min-width:0}
+.card input,.card textarea,.card select,.card button{max-width:100%}
+.card,.note,.item,.intro,.muted{overflow-wrap:anywhere;word-break:normal}
+img,video,iframe{max-width:100%;height:auto}
+.love-names{min-width:0;max-width:100%;gap:clamp(5px,1.8vw,14px)}
+.love-name{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.love-hero{max-width:100%;box-sizing:border-box}
+@media(max-width:600px){
+ header{position:relative;align-items:flex-start;gap:7px;padding:12px 12px}
+ header h1{flex:0 0 auto;font-size:19px;line-height:1.2}
+ header h1 span{font-size:34px}
+ .header-actions{flex:1 1 0;gap:5px}
+ .header-actions button{font-size:11px!important;padding:8px 9px!important;line-height:1.25;flex:0 1 auto}
+ main{width:100%;padding:0 10px;margin-bottom:55px}
+ .card{padding:18px 14px;border-radius:20px}
+ .love-hero{padding:28px 8px 24px;margin:8px 0 15px}
+ .love-name{font-size:clamp(36px,10vw,58px);line-height:1.18}
+ .love-heart{font-size:clamp(19px,6vw,30px)}
+ .love-names{flex-wrap:nowrap;gap:5px}
+ .love-hero .date-ribbon{letter-spacing:.4px;font-size:11px;padding:8px 10px}
+ .live-timer{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .live-timer strong{font-size:clamp(22px,7vw,32px)}
+ .feature-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .feature-nav button{min-width:0;overflow-wrap:anywhere;font-size:12px}
+ .photo-grid,.feature-grid,.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .row>*{flex-basis:100%}
+}
+@media(max-width:360px){.love-name{font-size:34px}.love-heart{font-size:19px}.photo-grid,.feature-grid{grid-template-columns:1fr}.header-actions button{font-size:10px!important;padding:7px!important}}
+
+/* Muly Chat */
+.muly-chat-feed{height:min(58vh,510px);min-height:300px;overflow-y:auto;padding:15px;background:linear-gradient(150deg,#fff5f7,#fffaf5);border:1px solid var(--line);border-radius:20px;display:flex;flex-direction:column;gap:10px}
+.muly-chat-msg{max-width:82%;padding:11px 14px;border-radius:17px 17px 17px 5px;background:#fff;border:1px solid #eddce1;align-self:flex-start;overflow-wrap:anywhere;white-space:pre-wrap;box-shadow:0 2px 8px #8b4d580b}
+.muly-chat-msg.mine{align-self:flex-end;border-radius:17px 17px 5px 17px;background:#f5d9e3;border-color:#e8bfce}
+.muly-chat-msg small{display:block;text-align:right;margin-top:5px;font-size:10px}
+.muly-chat-compose{display:flex;align-items:flex-end;gap:8px;margin-top:12px}.muly-chat-compose textarea{flex:1;min-width:0;min-height:48px;max-height:130px;margin:0;resize:vertical}.muly-chat-compose button{flex:0 0 auto;min-height:48px}
+body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .muly-chat-msg{background:#393048;border-color:#69536c;color:#f9e8f2}body.night .muly-chat-msg.mine{background:#75445f}
+@media(max-width:480px){.muly-chat-msg{max-width:90%}.muly-chat-compose button{padding:12px}}
+
+/* Muly baby */
+.baby-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}.baby-stage{height:350px;border-radius:22px;background:radial-gradient(circle at 50% 45%,#fff,#fbe3e8 75%);overflow:hidden;position:relative}.baby-stage canvas{width:100%;height:100%;display:block}.baby-stats .mini{margin-bottom:9px}.baby-stat{height:9px;background:#eadde2;border-radius:20px;overflow:hidden;margin-top:8px}.baby-stat>i{display:block;height:100%;background:#c97896;border-radius:20px;transition:width .4s}.baby-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.baby-actions button{padding:12px 7px}.baby-name-controls{margin:12px 0}.baby-name-controls input{margin-bottom:8px}@media(max-width:650px){.baby-layout{grid-template-columns:1fr}.baby-stage{height:310px}}
+</style>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Muly">
+</head>
+<body><div id="introCurtain" aria-hidden="true"><div>♡ Muly ♡<small>İKİ KALP · TEK HİKÂYE</small></div></div><div class="stars" id="stars" aria-hidden="true"></div>
+<header><h1><span>Muly</span> ♡</h1><div class="header-actions"><button id="rainToggle" class="secondary theme-toggle" type="button" style="display:none">🌧️ Yağmur</button><button id="themeToggle" class="secondary theme-toggle" type="button" aria-pressed="false">🌙 Gece modu</button><button id="logout" class="secondary hidden">Çıkış yap</button></div></header>
+<main>
+<div class="hero love-hero"><div class="love-hero-glow" aria-hidden="true">♡</div><div class="eyebrow">SADECE BİZE AİT BİR DÜNYA</div><div class="love-names" aria-label="Muly kalp Olcay"><span class="love-name">Muly</span><span class="love-heart" aria-hidden="true">♥</span><span class="love-name">Olcay</span></div><p class="love-quote">Seninle başlayan, her gün yeniden güzelleşen bir sonsuzluk.</p><div class="date-ribbon">14 MART 2026 <span aria-hidden="true">✦</span> 00:08</div><div class="ornament"><span>✧ ♡ ✧</span></div></div>
+<div class="night-message" aria-live="polite">✨ Parlaklığınla gecemi aydınlatıyorsun, Muly’m. ✨<span>GÖKYÜZÜMÜN EN GÜZEL YILDIZI ♡</span></div>
+<div id="notice" class="hidden" role="status"></div>
+<section id="setup" class="card"><h2>Önce bağlantıyı tamamla</h2><p>Bu dosyada <code>SUPABASE_URL</code> ve <code>SUPABASE_KEY</code> alanlarını kendi Supabase proje bilgilerinle değiştir.</p></section>
+<section id="auth" class="card hidden"><div class="auth-mark">❀</div><h2>Bizim hikâyemize hoş geldin ❤️</h2><form id="authForm"><label>E-posta</label><input id="email" type="email" required autocomplete="email"><label>Şifre</label><input id="password" type="password" required minlength="6" autocomplete="current-password"><div class="row"><button type="submit" id="loginBtn">Giriş yap</button><button type="button" class="secondary" id="signupBtn">Hesap oluştur</button></div></form><p class="muted">Kayıt sonrası e-posta doğrulaması gerekebilir.</p></section>
+<section id="pair" class="card hidden"><div class="auth-mark">♡</div><h2>İkinizin alanını oluşturun 💌</h2><p>Biriniz çift alanı oluşturup davet kodunu diğerine göndersin. Diğeri kendi hesabından kodla katılsın.</p><button id="createPair">Davet kodu oluştur</button><hr style="border:0;border-top:1px solid #f5d7e3;margin:22px 0"><label>Davet kodu</label><input id="inviteInput" placeholder="Davet kodunu yaz"><button id="joinPair">Koda katıl</button></section>
+<section id="app" class="hidden"><div class="card" id="pushSettings"><h2>🔔 Telefon bildirimleri</h2><p class="intro">Sevgilinden kalp geldiğinde telefonunda bildirim görmek için bu cihazda izin ver.</p><button id="enablePush" type="button">🔔 Bildirimleri Aç</button><p class="muted" id="pushStatus" aria-live="polite">Henüz kontrol edilmedi.</p></div><div class="card relationship-card"><div class="section-kicker">♡ 14.03.2026 · 00:08 ♡</div><h2>Seninle geçen her saniye</h2><p class="intro">Birlikte yazdığımız hikâyenin başladığı o güzel andan beri…</p><div class="timer live-timer"><div><small>Gün</small><strong id="elapsed">—</strong></div><div><small>Saat</small><strong id="elapsedHours">—</strong></div><div><small>Dakika</small><strong id="elapsedMinutes">—</strong></div><div><small>Saniye</small><strong id="elapsedSeconds">—</strong></div></div><p class="anniversary-countdown">İlk yıl dönümümüze <strong id="remaining">—</strong></p><p class="muted" id="pairStatus"></p></div>
+<section class="card anniversary" id="anniversaryCard"><div class="section-kicker">14 MART · BİZİM GÜNÜMÜZ</div><h2 id="anniversaryTitle">İyi ki sen ♡</h2><p id="anniversaryText">Birlikte yazacağımız daha nice güzel yıllara...</p></section><div id="specialCelebrations"></div>
+<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
+<section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
+<section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
+<section id="memories" class="card tab"><h2>Ortak anılarımız 📸</h2><form id="memoryForm"><label>Başlık</label><input id="memoryTitle" maxlength="150" required><label>Anı</label><textarea id="memoryDescription" required></textarea><label>Tarih</label><input id="memoryDate" type="date" required><label>Fotoğraf (isteğe bağlı, en fazla 10 MB)</label><input id="memoryPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Yeni anı ekle</button></form><div id="memoryList"></div></section>
+<section id="wishes" class="card tab hidden"><h2>Birlikte yapacaklarımız ✨</h2><form id="wishForm"><label>Hayalimiz</label><input id="wishTitle" maxlength="200" required><label>Detaylar</label><textarea id="wishNotes" placeholder="Nerede, nasıl, ne zaman?" maxlength="3000"></textarea><label>Hedef tarih (isteğe bağlı)</label><input id="wishDate" type="date"><label>Fotoğraf (isteğe bağlı)</label><input id="wishPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Listeye ekle</button></form><div id="wishList"></div></section>
+
+<section id="sky" class="card tab hidden"><h2>Bizim gökyüzümüz ✨</h2><p class="intro">Her anımız gökyüzünde bir yıldız. Yıldızlara dokunup hikâyelerini hatırla.</p><div class="sky-box" id="skyBox"><div class="sky-caption">Yıldızlarımızı birlikte çoğaltalım ♡</div></div><div id="skyDetails" class="note">Bir yıldıza dokun ♡</div></section>
+<section id="calendar" class="card tab hidden"><h2>Aşk takvimimiz 📅</h2><p class="intro">Özel günler, buluşmalar ve küçük kutlamalar.</p><form id="eventForm"><label>Özel günün adı</label><input id="eventTitle" maxlength="180" required placeholder="İlk buluşmamız"><label>Tarih</label><input id="eventDate" type="date" required><label>Not (isteğe bağlı)</label><textarea id="eventNotes" maxlength="3000"></textarea><button>Takvime ekle</button></form><div id="eventList"></div></section>
+<section id="miss" class="card tab hidden"><h2>Seni özledim ❤️</h2><p class="intro">Bu kalbe bastığında ikinizin ortak alanında bir özlem izi bırakılır.</p><button id="missBtn" style="font-size:22px;padding:22px 30px">❤️ Seni özledim!</button><p class="muted" id="missSummary"></p><div id="missList"></div></section>
+<section id="moods" class="card tab hidden"><h2>Bugün nasıl hissediyoruz? 🥹</h2><form id="moodForm"><label>Ruh halim</label><select id="moodSelect"><option value="mutlu">😊 Mutluyum</option><option value="ozledim">🥹 Özledim</option><option value="heyecanli">✨ Heyecanlıyım</option><option value="yorgun">🌿 Yorgunum</option><option value="uzgun">🌧️ Üzgünüm</option><option value="asik">🥰 Âşığım</option></select><label>Küçük bir not (isteğe bağlı)</label><textarea id="moodNote" maxlength="1000"></textarea><button>Ruh halimi paylaş</button></form><div id="moodList"></div></section>
+<section id="music" class="card tab hidden"><h2>Bizim şarkımız 🎵</h2><p class="intro">Spotify, YouTube veya Apple Music bağlantısını ekleyin. İkiniz de aynı şarkıyı burada görürsünüz.</p><form id="songForm"><label>Şarkı adı</label><input id="songTitle" maxlength="180" placeholder="Bizim şarkımız" required><label>Şarkı bağlantısı</label><input id="songUrl" type="url" placeholder="https://open.spotify.com/..." required><button>Şarkımızı kaydet</button></form><div id="songDisplay" class="note">Henüz bir şarkı seçilmedi.</div></section>
+<section id="letters" class="card tab hidden"><h2>Kalbimizden mektuplar 💌</h2><p class="muted">Gönderdiğin mektubu sen görebilirsin; alıcısı yalnızca belirlediğin tarihten sonra okuyabilir.</p><form id="letterForm"><label>Başlık</label><input id="letterTitle" maxlength="150" required><label>Mektup</label><textarea id="letterContent" required></textarea><label>Açılacağı tarih ve saat</label><input id="unlockAt" type="datetime-local" required><button id="sendLetter">Mektubu gönder</button></form><div id="letterList"></div></section>
+
+<section id="firsts" class="card tab hidden"><h2>İlklerimiz 🌸</h2><p class="intro">İlk buluşmamız, ilk fotoğrafımız ve birlikte yaşadığımız bütün ilkler...</p><form id="firstForm"><label>İlkimizin adı</label><input id="firstTitle" maxlength="160" required placeholder="İlk buluşmamız"><label>Tarih</label><input id="firstDate" type="date" required><label>Hikâyesi</label><textarea id="firstDescription" maxlength="3000"></textarea><label>Fotoğraf (isteğe bağlı)</label><input id="firstPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>İlk anımızı kaydet</button></form><div id="firstList"></div></section>
+<section id="summary" class="card tab hidden"><h2>Bu ay bizim hikâyemiz 📊</h2><p class="intro">Bu ay eklenen anılar, tamamlanan hayaller, gönderilen kalpler ve paylaşılan ruh halleri.</p><div id="summaryDisplay" class="summary-grid"></div><h3>Geçen yıl bugün ♡</h3><div id="onThisDay" class="note"></div></section>
+<section id="hearts" class="card tab hidden"><h2>Bir kalp de benden sana 💗</h2><p class="intro">Dokunduğunda sevgiline bir kalp ve site içi bildirim gider.</p><button id="sendHeart" type="button" style="font-size:22px;padding:22px 28px">💗 Kalbimi gönder</button><div id="heartHistory"></div></section>
+<section id="notifications" class="card tab hidden"><h2>Kalbime gelenler 🔔</h2><p class="intro">Sevgilinden gelen kalpler burada birikir.</p><button type="button" id="markNotifications" class="secondary">Tümünü okundu işaretle</button><div id="notificationList"></div></section>
+</section>
+<div class="footer">Birlikte yazdığımız en güzel hikâye <strong>♡ Muly</strong></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+// Gece/gündüz seçimi yalnızca bu cihazda saklanır; Supabase verilerine dokunmaz.
+function applyTheme(night){document.body.classList.toggle('night',night);const b=document.getElementById('themeToggle');b.textContent=night?'☀️ Gündüz modu':'🌙 Gece modu';b.setAttribute('aria-pressed',String(night));document.querySelector('meta[name="theme-color"]').setAttribute('content',night?'#101426':'#fff0f5');}
+try{applyTheme(localStorage.getItem('muly-theme')==='night');}catch(e){applyTheme(false);}
+document.getElementById('themeToggle').addEventListener('click',()=>{const night=!document.body.classList.contains('night');applyTheme(night);try{localStorage.setItem('muly-theme',night?'night':'day');}catch(e){}});
+const sky=document.getElementById('stars');for(let i=0;i<65;i++){const star=document.createElement('i');star.style.left=((i*73.37+11)%100)+'%';star.style.top=((i*47.91+7)%100)+'%';star.style.animationDelay=(-(i%11)*.37)+'s';star.style.animationDuration=(2+(i%5)*.7)+'s';sky.append(star);}
+
+// SADECE Project URL ve publishable / anon key kullan. Secret veya service_role anahtarı koyma.
+// Web Push public key (bildirim gönderimini tek başına etkinleştirmez)
+const VAPID_PUBLIC_KEY = 'BMlMvXTyMMrq0fQZHZw8igfMC7zJ839wtRTsIEwe_oDal0H3kRP2omh5ZJ1XlXs2EjZdI0hn9LHlzSI-3Bim468';
+const SUPABASE_URL = 'https://gzccrqrjmrdrluqqmrrz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Dhuz9-JfiMSpaScysEvfPA_0sFxZ4rH';
+const $ = id => document.getElementById(id);
+const show = (id,yes=true) => $(id).classList.toggle('hidden',!yes);
+const notice = msg => { $('notice').textContent=msg; show('notice',!!msg); };
+let db,user,partnerId=null,coupleInfo=null;
+const formatDate = x => new Date(x).toLocaleString('tr-TR');
+function el(tag,content,cls){const node=document.createElement(tag);if(content!==undefined)node.textContent=content;if(cls)node.className=cls;return node;}
+function fail(err){notice(err?.message || 'Bir hata oluştu.');console.error(err);}
+function tick(){const now=new Date();const start=new Date('2026-03-14T00:08:00+03:00');const anniversary=new Date('2027-03-14T00:08:00+03:00');const seconds=Math.max(0,Math.floor((now-start)/1000));$('elapsed').textContent=String(Math.floor(seconds/86400));$('elapsedHours').textContent=String(Math.floor(seconds%86400/3600)).padStart(2,'0');$('elapsedMinutes').textContent=String(Math.floor(seconds%3600/60)).padStart(2,'0');$('elapsedSeconds').textContent=String(seconds%60).padStart(2,'0');const diff=anniversary-now;$('remaining').textContent=diff>0?Math.ceil(diff/86400000)+' gün':'İlk yılımız kutlu olsun!';}
+async function init(){if(SUPABASE_URL.includes('BURAYA_')||SUPABASE_KEY.includes('BURAYA_'))return;show('setup',false);try{db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const {data:{session},error}=await db.auth.getSession();if(error)throw error;await setSession(session);db.auth.onAuthStateChange((_event,s)=>{setTimeout(()=>setSession(s).catch(fail),0);});}catch(e){fail(e);}}
+async function setSession(session){user=session?.user||null;show('logout',!!user);show('auth',!user);show('pair',false);show('app',false);if(!user){partnerId=null;coupleInfo=null;return;}await loadCouple();}
+async function loadCouple(){const {data,error}=await db.rpc('get_my_couple_info');if(error)throw error;coupleInfo=data?.[0]||null;partnerId=coupleInfo?.partner_id||null;show('pair',!coupleInfo);show('app',!!coupleInfo);if(coupleInfo){$('pairStatus').textContent=partnerId?'İkiniz de bağlandınız ❤️':'Partnerin henüz katılmadı. Davet kodun: '+coupleInfo.invite_code;tick();await refresh();updatePushStatus().catch(console.warn);}}
+$('authForm').onsubmit=async e=>{e.preventDefault();notice('');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)fail(error);};
+$('signupBtn').onclick=async()=>{notice('');if(!$('authForm').reportValidity())return;const {data,error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});if(error)fail(error);else notice(data.session?'Hesabın oluşturuldu.':'Kayıt alındı. E-posta doğrulama bağlantısını kontrol et, ardından giriş yap.');};
+$('logout').onclick=async()=>{const {error}=await db.auth.signOut();if(error)fail(error);else notice('Çıkış yapıldı.');};
+$('createPair').onclick=async()=>{const {data,error}=await db.rpc('create_couple');if(error)fail(error);else{notice('Davet kodun: '+data+'\nBu kodu partnerinle paylaş.');await loadCouple().catch(fail);}};
+$('joinPair').onclick=async()=>{const code=$('inviteInput').value.trim();if(!code)return notice('Davet kodunu yaz.');const {error}=await db.rpc('join_couple',{code});if(error)fail(error);else{notice('Artık aynı alandasınız ❤️');await loadCouple().catch(fail);}};
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.tab').forEach(section=>show(section.id,section.id===btn.dataset.tab));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));});
+async function refresh(){await Promise.all([loadMemories(),loadWishes(),loadLetters(),loadEvents(),loadMiss(),loadMoods(),loadSong(),loadFirsts(),loadHearts(),loadNotifications(),loadMonthlySummary()]);}
+const escapeSafeDate = x => x ? new Date(x+'T12:00:00').toLocaleDateString('tr-TR') : '';
+async function uploadPhoto(file){
+ if(!file)return null;
+ if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type))throw Error('Yalnızca JPG, PNG, WebP veya GIF yükleyebilirsin.');
+ if(file.size>10*1024*1024)throw Error('Fotoğraf en fazla 10 MB olabilir.');
+ const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'})[file.type];
+ const path=`${coupleInfo.couple_id}/${user.id}/${crypto.randomUUID()}.${ext}`;
+ const {error}=await db.storage.from('muly-photos').upload(path,file,{contentType:file.type,upsert:false});
+ if(error)throw error;return path;
+}
+async function addPhoto(node,path){if(!path)return;const {data,error}=await db.storage.from('muly-photos').createSignedUrl(path,3600);if(error){console.warn(error);return;}const img=el('img');img.src=data.signedUrl;img.alt='Ortak anımızın fotoğrafı';img.loading='lazy';img.className='item-photo';node.append(img);}
+let cachedMemories=[];
+async function loadMemories(){const {data,error}=await db.from('memories').select('id,title,description,event_date,photo_path,created_at').order('event_date',{ascending:false});if(error)return fail(error);cachedMemories=data||[];const root=$('memoryList');root.replaceChildren();for(const m of cachedMemories){const item=el('div',undefined,'item');item.append(el('h3',m.title),el('small',escapeSafeDate(m.event_date)));await addPhoto(item,m.photo_path);item.append(el('p',m.description||''));root.append(item);}if(!cachedMemories.length)root.append(el('p','Henüz anı eklenmedi.','muted'));drawSky();}
+$('memoryForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{const path=await uploadPhoto($('memoryPhoto').files[0]);const {error}=await db.from('memories').insert({title:$('memoryTitle').value.trim(),description:$('memoryDescription').value.trim(),event_date:$('memoryDate').value,photo_path:path,created_by:user.id});if(error)throw error;e.target.reset();notice('Anınız ve fotoğrafınız kaydedildi ❤️');await loadMemories();}catch(err){fail(err);}finally{btn.disabled=false;}};
+function drawSky(){const root=$('skyBox');root.querySelectorAll('.sky-star').forEach(x=>x.remove());cachedMemories.forEach((m,i)=>{const star=el('button','✦','sky-star');star.type='button';star.style.left=(8+((i*37+19)%84))+'%';star.style.top=(12+((i*29+17)%66))+'%';star.style.fontSize=(21+(i%3)*7)+'px';star.title=m.title;star.onclick=async()=>{const d=$('skyDetails');d.replaceChildren(el('strong',m.title),el('p',escapeSafeDate(m.event_date)+' · '+(m.description||'')));await addPhoto(d,m.photo_path);};root.append(star);});}
+async function loadWishes(){const {data,error}=await db.from('wishes').select('id,title,completed,notes,due_date,photo_path,created_at').order('created_at',{ascending:false});if(error)return fail(error);const root=$('wishList');root.replaceChildren();for(const w of data){const item=el('div',undefined,'item');item.append(el('h3',(w.completed?'✅ ':'🎀 ')+w.title));if(w.due_date)item.append(el('small','Hedef: '+escapeSafeDate(w.due_date)));if(w.notes)item.append(el('p',w.notes));await addPhoto(item,w.photo_path);const button=el('button',w.completed?'Yeniden planla':'Gerçekleştirdik!','secondary');button.onclick=async()=>{const {error}=await db.from('wishes').update({completed:!w.completed}).eq('id',w.id);if(error)fail(error);else loadWishes();};item.append(button);root.append(item);}if(!data.length)root.append(el('p','İlk hayalinizi ekleyin.','muted'));}
+$('wishForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter;btn.disabled=true;try{const path=await uploadPhoto($('wishPhoto').files[0]);const {error}=await db.from('wishes').insert({title:$('wishTitle').value.trim(),completed:false,notes:$('wishNotes').value.trim()||null,due_date:$('wishDate').value||null,photo_path:path,created_by:user.id});if(error)throw error;e.target.reset();notice('Hayaliniz eklendi ✨');await loadWishes();}catch(err){fail(err);}finally{btn.disabled=false;}};
+async function loadEvents(){if(!coupleInfo)return;const {data,error}=await db.from('love_events').select('id,title,event_date,notes').eq('couple_id',coupleInfo.couple_id).order('event_date',{ascending:true});if(error)return fail(error);const root=$('eventList');root.replaceChildren();const items=[{title:'Bizim başlangıcımız ♡',event_date:'2026-03-14',notes:'00:08 · Her şeyin başladığı an'},{title:'İlk yıl dönümümüz 🎂',event_date:'2027-03-14',notes:'Birlikte ilk yılımız'} ,...data];for(const item of items){const div=el('div',undefined,'note');div.append(el('strong',item.title),el('p',escapeSafeDate(item.event_date)+(item.notes?' · '+item.notes:'')));if(item.id){const del=el('button','Sil','secondary');del.onclick=async()=>{if(!confirm('Bu özel günü silmek istiyor musun?'))return;const {error}=await db.from('love_events').delete().eq('id',item.id);if(error)fail(error);else loadEvents();};div.append(del);}root.append(div);}}
+$('eventForm').onsubmit=async e=>{e.preventDefault();const {error}=await db.from('love_events').insert({couple_id:coupleInfo.couple_id,created_by:user.id,title:$('eventTitle').value.trim(),event_date:$('eventDate').value,notes:$('eventNotes').value.trim()||null});if(error)return fail(error);e.target.reset();notice('Özel gün takvime eklendi 📅');await loadEvents();};
+async function loadMiss(){if(!coupleInfo)return;const {data,error}=await db.from('miss_signals').select('sender_id,created_at').eq('couple_id',coupleInfo.couple_id).order('created_at',{ascending:false}).limit(30);if(error)return fail(error);$('missSummary').textContent='Son '+data.length+' özlem mesajı (en fazla 30 gösterilir).';const root=$('missList');root.replaceChildren();for(const m of data){const item=el('div',(m.sender_id===user.id?'Sen':'Sevgilin')+' seni özledi ❤️ · '+formatDate(m.created_at),'note');root.append(item);}}
+$('missBtn').onclick=async()=>{const btn=$('missBtn');btn.disabled=true;try{const {error}=await db.from('miss_signals').insert({couple_id:coupleInfo.couple_id,sender_id:user.id});if(error)throw error;notice('Kalbinin mesajı bırakıldı ❤️');await loadMiss();}catch(err){fail(err);}finally{btn.disabled=false;}};
+const moodLabels={mutlu:'😊 Mutluyum',ozledim:'🥹 Özledim',heyecanli:'✨ Heyecanlıyım',yorgun:'🌿 Yorgunum',uzgun:'🌧️ Üzgünüm',asik:'🥰 Âşığım'};
+async function loadMoods(){if(!coupleInfo)return;const {data,error}=await db.from('love_moods').select('user_id,mood,note,created_at').eq('couple_id',coupleInfo.couple_id).order('created_at',{ascending:false}).limit(20);if(error)return fail(error);const root=$('moodList');root.replaceChildren();for(const m of data){const item=el('div',undefined,'note');item.append(el('strong',(m.user_id===user.id?'Sen':'Sevgilin')+' · '+(moodLabels[m.mood]||m.mood)),el('small',formatDate(m.created_at)));if(m.note)item.append(el('p',m.note));root.append(item);}if(!data.length)root.append(el('p','Henüz ruh hali paylaşılmadı.','muted'));}
+$('moodForm').onsubmit=async e=>{e.preventDefault();const {error}=await db.from('love_moods').insert({couple_id:coupleInfo.couple_id,user_id:user.id,mood:$('moodSelect').value,note:$('moodNote').value.trim()||null});if(error)return fail(error);e.target.reset();notice('Ruh halin paylaşıldı 🥹');await loadMoods();};
+function safeSongUrl(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return null;const host=u.hostname.toLowerCase();if(!['open.spotify.com','music.apple.com','www.youtube.com','youtube.com','youtu.be','music.youtube.com'].includes(host))return null;return u.href;}catch{return null;}}
+async function loadSong(){if(!coupleInfo)return;const {data,error}=await db.from('couple_settings').select('song_title,song_url').eq('couple_id',coupleInfo.couple_id).maybeSingle();if(error)return fail(error);const root=$('songDisplay');root.replaceChildren();if(data?.song_url){const a=el('a','🎵 '+(data.song_title||'Bizim şarkımız')+' — dinlemek için aç');a.href=safeSongUrl(data.song_url)||'#';a.target='_blank';a.rel='noopener noreferrer';root.append(a);$('songTitle').value=data.song_title||'';$('songUrl').value=data.song_url||'';}else root.textContent='Henüz şarkı seçilmedi.';}
+$('songForm').onsubmit=async e=>{e.preventDefault();const url=safeSongUrl($('songUrl').value);if(!url)return notice('Spotify, YouTube veya Apple Music için geçerli bir HTTPS bağlantısı ekle.');const {error}=await db.from('couple_settings').upsert({couple_id:coupleInfo.couple_id,song_title:$('songTitle').value.trim(),song_url:url,updated_at:new Date().toISOString()},{onConflict:'couple_id'});if(error)return fail(error);notice('Şarkınız kaydedildi 🎵');await loadSong();};
+function updateAnniversary(){const today=new Date();const isDay=today.getMonth()===2&&today.getDate()===14;const years=today.getFullYear()-2026;$('anniversaryTitle').textContent=isDay&&years>0?`${years}. yılımız kutlu olsun, Muly'm! 🎂`:'İyi ki sen ♡';$('anniversaryText').textContent=isDay&&years>0?'Birlikte geçirdiğimiz her yıl, en güzel hediyem. Seni çok seviyorum. ❤️':'14 Mart geldiğinde burası size özel bir kutlama ekranına dönüşecek. ♡';}
+updateAnniversary();
+async function loadLetters(){const {data,error}=await db.from('letters').select('id,title,content,sender,recipient,unlock_at,created_at').order('created_at',{ascending:false});if(error)return fail(error);const root=$('letterList');root.replaceChildren();for(const l of data){const item=el('div',undefined,'item');const mine=l.sender===user.id;item.append(el('h3',l.title),el('small',(mine?'Gönderdiğin mektup':'Sana gelen mektup')+' · Açılma: '+formatDate(l.unlock_at)),el('p',l.content));root.append(item);}if(!data.length)root.append(el('p','Henüz okunabilir veya gönderilmiş mektup yok.','muted'));}
+$('letterForm').onsubmit=async e=>{e.preventDefault();if(!partnerId)return notice('Mektup göndermek için partnerinin davet koduyla katılması gerekiyor.');const local=$('unlockAt').value;const unlock=new Date(local);if(Number.isNaN(unlock.getTime()))return notice('Geçerli bir tarih seç.');const {error}=await db.from('letters').insert({title:$('letterTitle').value.trim(),content:$('letterContent').value.trim(),sender:user.id,recipient:partnerId,unlock_at:unlock.toISOString()});if(error)return fail(error);e.target.reset();notice('Mektubun kaydedildi 💌');await loadLetters();};
+setInterval(()=>{if(user&&coupleInfo)tick();},1000);setInterval(()=>{if(user&&coupleInfo)updateAnniversary();},60000);
+
+// Web Push subscription: only the signed-in user's own endpoint is stored.
+function pushKeyBytes(base64) {
+  const padding = '='.repeat((4 - base64.length % 4) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+function pushStatus(message) { $('pushStatus').textContent = message; }
+async function updatePushStatus() {
+  if (!user || !coupleInfo) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+    pushStatus('Bu tarayıcı Web Push desteklemiyor.');
+    $('enablePush').disabled = true;
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    pushStatus('Bildirimler engellenmiş. Telefonun site/uygulama ayarlarından izin ver.');
+    return;
+  }
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    pushStatus(subscription ? 'Bu cihazda bildirim aboneliği var. Yenilemek için butona basabilirsin.' : 'Bu cihazda bildirimler henüz açılmadı.');
+    $('enablePush').textContent = subscription ? '🔔 Bildirim aboneliğini yenile' : '🔔 Bildirimleri Aç';
+  } catch (error) { pushStatus('Bildirim durumu kontrol edilemedi: ' + error.message); }
+}
+$('enablePush').onclick = async () => {
+  const button = $('enablePush');
+  button.disabled = true;
+  try {
+    if (!user || !coupleInfo) throw new Error('Önce hesabına giriş yapıp çift bağlantısını tamamla.');
+    if (!window.isSecureContext) throw new Error('Bildirimler için HTTPS bağlantısı gerekiyor.');
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) throw new Error('Bu cihaz Web Push desteklemiyor.');
+    if (!VAPID_PUBLIC_KEY) throw new Error('VAPID Public Key eklenmemiş.');
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') throw new Error('Bildirim izni verilmedi.');
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+    const key = pushKeyBytes(VAPID_PUBLIC_KEY);
+    if (subscription) {
+      const existingKey = subscription.options?.applicationServerKey;
+      if (existingKey && Array.from(new Uint8Array(existingKey)).join(',') !== Array.from(key).join(',')) {
+        await subscription.unsubscribe();
+        subscription = null;
+      }
+    }
+    if (!subscription) subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+    const payload = subscription.toJSON();
+    const record = {user_id: user.id, endpoint: subscription.endpoint, p256dh: payload.keys?.p256dh, auth_key: payload.keys?.auth};
+    if (!record.p256dh || !record.auth_key) throw new Error('Tarayıcı abonelik anahtarlarını vermedi.');
+    const {data: found, error: selectError} = await db.from('push_subscriptions').select('id').eq('user_id', user.id).eq('endpoint', record.endpoint).maybeSingle();
+    if (selectError) throw selectError;
+    if (found) {
+      const {error} = await db.from('push_subscriptions').delete().eq('id', found.id);
+      if (error) throw error;
+    }
+    const {error} = await db.from('push_subscriptions').insert(record);
+    if (error) throw error;
+    pushStatus('✅ Bu cihazın bildirim aboneliği Supabase’e kaydedildi.');
+    button.textContent = '🔔 Bildirim aboneliğini yenile';
+  } catch (error) {
+    pushStatus('❌ ' + (error?.message || 'Bildirimler açılamadı.'));
+    console.error('Muly push:', error);
+  } finally { button.disabled = false; }
+};
+
+init();
+if (new URLSearchParams(location.search).has('muly_heart')) {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (typeof heartAnimation === 'function') heartAnimation();
+      const tab = document.querySelector('[data-tab="notifications"]');
+      if (tab && user && coupleInfo) tab.click();
+      history.replaceState(null, '', location.pathname);
+    }, 1600);
+  });
+}
+
+</script>
+<script>
+// Muly 3.0 — Yeni özellikler
+let cachedFirsts=[];
+function heartAnimation(){for(let i=0;i<12;i++){const n=el('span',i%3===0?'💗':'❤️','heart-burst');n.style.left=(35+Math.random()*30)+'vw';n.style.top=(45+Math.random()*25)+'vh';n.style.animationDelay=(i*.07)+'s';document.body.append(n);setTimeout(()=>n.remove(),2200);}}
+const rainButton=$('rainToggle');
+function syncRainButton(){rainButton.style.display=document.body.classList.contains('night')?'inline-block':'none';rainButton.textContent=document.body.classList.contains('rainy')?'☔ Yağmuru kapat':'🌧️ Yağmur';}
+try{if(localStorage.getItem('muly-rain')==='yes')document.body.classList.add('rainy');}catch(e){}
+syncRainButton();$('themeToggle').addEventListener('click',syncRainButton);
+rainButton.onclick=()=>{document.body.classList.toggle('rainy');syncRainButton();try{localStorage.setItem('muly-rain',document.body.classList.contains('rainy')?'yes':'no');}catch(e){}};
+function shootingStar(){if(!document.body.classList.contains('night')||document.hidden)return;const n=el('div',undefined,'shooting-star');n.style.top=(5+Math.random()*30)+'%';n.style.left=(50+Math.random()*40)+'%';document.body.append(n);setTimeout(()=>n.remove(),2400);}
+setInterval(shootingStar,18000);
+async function loadFirsts(){if(!coupleInfo)return;const {data,error}=await db.from('muly_firsts').select('id,title,first_date,description,photo_path').eq('couple_id',coupleInfo.couple_id).order('first_date',{ascending:false});if(error)return fail(error);cachedFirsts=data||[];const root=$('firstList');root.replaceChildren();for(const f of cachedFirsts){const d=el('div',undefined,'item');d.append(el('h3','🌸 '+f.title),el('small',escapeSafeDate(f.first_date)));await addPhoto(d,f.photo_path);if(f.description)d.append(el('p',f.description));const b=el('button','Sil','secondary');b.onclick=async()=>{if(!confirm('Bu ilk anıyı silmek istiyor musun?'))return;const {error}=await db.from('muly_firsts').delete().eq('id',f.id);if(error)fail(error);else loadFirsts();};d.append(b);root.append(d);}if(!cachedFirsts.length)root.append(el('p','İlk anınızı ekleyin ♡','muted'));showOnThisDay();}
+$('firstForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const path=await uploadPhoto($('firstPhoto').files[0]);const {error}=await db.from('muly_firsts').insert({couple_id:coupleInfo.couple_id,created_by:user.id,title:$('firstTitle').value.trim(),first_date:$('firstDate').value,description:$('firstDescription').value.trim()||null,photo_path:path});if(error)throw error;e.target.reset();notice('İlk anınız kaydedildi 🌸');await loadFirsts();}catch(e){fail(e);}finally{b.disabled=false;}};
+function showOnThisDay(){const now=new Date(),m=now.getMonth()+1,d=now.getDate(),year=now.getFullYear();const all=[...cachedMemories.map(x=>({title:x.title,date:x.event_date})),...cachedFirsts.map(x=>({title:x.title,date:x.first_date}))];const matches=all.filter(x=>{const bits=(x.date||'').split('-').map(Number);return bits[0]<year&&bits[1]===m&&bits[2]===d;});$('onThisDay').textContent=matches.length?matches.map(x=>'💗 '+x.title+' · '+escapeSafeDate(x.date)).join('\n'):'Bugünün geçmiş yıllarına ait kayıtlı bir anınız henüz yok.';}
+const oldLoadMemories=loadMemories;loadMemories=async function(){await oldLoadMemories();showOnThisDay();};
+async function loadHearts(){if(!coupleInfo)return;const {data,error}=await db.from('muly_hearts').select('sender_id,created_at').eq('couple_id',coupleInfo.couple_id).order('created_at',{ascending:false}).limit(20);if(error)return fail(error);const root=$('heartHistory');root.replaceChildren();for(const h of data||[])root.append(el('div',(h.sender_id===user.id?'Sen kalp gönderdin':'Sevgilin sana kalp gönderdi')+' 💗 · '+formatDate(h.created_at),'note'));}
+$('sendHeart').onclick=async()=>{
+  const b=$('sendHeart');b.disabled=true;
+  try{
+    const {error}=await db.rpc('muly_send_heart');
+    if(error)throw error;
+    heartAnimation();
+    await loadHearts();
+    // Kalp kaydı başarılı olsa bile push gönderimi başarısız olabilir.
+    try{
+      const {data,error:pushError}=await db.functions.invoke('send-heart-push',{body:{}});
+      if(pushError)throw pushError;
+      if(data?.error)throw new Error(data.error);
+      notice(data?.sent>0?'Kalbin gönderildi, telefon bildirimi de yollandı 💗':
+        'Kalbin gönderildi 💗 Telefon bildirimi gönderilemedi: '+(data?.message||'Alıcı cihazı kayıtlı olmayabilir.'));
+    }catch(pushErr){
+      console.warn('Muly push:',pushErr);
+      notice('Kalbin gönderildi 💗 Ancak telefon bildirimi gönderilemedi. Edge Function loglarını kontrol et.');
+    }
+  }catch(e){fail(e);}finally{b.disabled=false;}
+};
+async function loadNotifications(){if(!user||!coupleInfo)return;const {data,error}=await db.from('muly_notifications').select('id,body,read_at,created_at').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(60);if(error)return fail(error);$('notifCount').textContent=(data||[]).filter(x=>!x.read_at).length;const root=$('notificationList');root.replaceChildren();for(const n of data||[]){const div=el('div',undefined,'note');div.append(el('strong',n.read_at?'♡ ':'💗 '),document.createTextNode(n.body+' · '+formatDate(n.created_at)));root.append(div);}if(!data?.length)root.append(el('p','Henüz bildirim yok.','muted'));}
+$('markNotifications').onclick=async()=>{const {error}=await db.from('muly_notifications').update({read_at:new Date().toISOString()}).eq('recipient_id',user.id).is('read_at',null);if(error)fail(error);else await loadNotifications();};
+async function loadMonthlySummary(){if(!coupleInfo)return;const now=new Date();const start=new Date(now.getFullYear(),now.getMonth(),1).toISOString(),end=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString();const queries=[db.from('memories').select('id',{count:'exact',head:true}).gte('created_at',start).lt('created_at',end),db.from('wishes').select('id',{count:'exact',head:true}).eq('completed',true),db.from('muly_hearts').select('id',{count:'exact',head:true}).eq('couple_id',coupleInfo.couple_id).gte('created_at',start).lt('created_at',end),db.from('love_moods').select('id',{count:'exact',head:true}).eq('couple_id',coupleInfo.couple_id).gte('created_at',start).lt('created_at',end)];const results=await Promise.all(queries);const labels=['Bu ay eklenen anılar','Tamamlanan hayaller (toplam)','Bu ay gönderilen kalpler','Bu ay paylaşılan ruh halleri'];const root=$('summaryDisplay');root.replaceChildren();results.forEach((r,i)=>{if(r.error){fail(r.error);return;}const box=el('div',undefined,'mini');box.append(el('small',labels[i]),el('strong',String(r.count??0)));root.append(box);});showOnThisDay();}
+function renderCelebrations(){const now=new Date(),day=now.getDate(),month=now.getMonth()+1,year=now.getFullYear();const root=$('specialCelebrations');root.replaceChildren();if(month===3&&day===14&&year>=2027){const c=el('div',undefined,'celebration');c.append(el('strong','🎂 '+(year-2026)+'. yılımız kutlu olsun!'),el('p','İyi ki yollarımız kesişti, Muly’m. Her yeni yılda yine sen. ❤️'));root.append(c);}const items=Array.from($('eventList').querySelectorAll('.note'));for(const item of items){const label=item.querySelector('strong')?.textContent||'';const text=item.querySelector('p')?.textContent||'';const dateText=text.split(' · ')[0];const match=dateText.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);if(!match)continue;const [,dd,mm,yyyy]=match.map(Number);const annual=/doğum günü|doğum günüm|yıl dönümü|yıldönümü/i.test(label);if(dd===day&&mm===month&&(annual?year>=yyyy:year===yyyy)){const c=el('div',undefined,'celebration');c.append(el('strong',/doğum/i.test(label)?'🎂 İyi ki doğdun!':'🎉 Bugün özel bir gün!'),el('p',label+' ♡'));root.append(c);}}}
+
+const oldLoadEvents=loadEvents;loadEvents=async function(){await oldLoadEvents();renderCelebrations();};
+// Yılda bir tekrarlanan doğum günleri ve özel günler: takvimdeki başlığa "Doğum günü" yazılabilir.
+
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('Muly PWA:', err));
+  });
+}
+</script>
+
+<script>
+// Muly Chat: mevcut uygulama fonksiyonlarına dokunmadan çalışır.
+(() => {
+  let channel = null, activeCouple = null, loading = false, lastSignature = '';
+  const feed = document.getElementById('mulyChatFeed');
+  const status = document.getElementById('mulyChatStatus');
+  const form = document.getElementById('mulyChatForm');
+  const input = document.getElementById('mulyChatText');
+  const send = document.getElementById('mulyChatSend');
+  function setStatus(message) { status.textContent = message; }
+  function scrollToBottom() { feed.scrollTop = feed.scrollHeight; }
+  async function loadMessages(force = false) {
+    if (!(typeof db !== "undefined" && db) || !(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id) || loading) return;
+    loading = true;
+    try {
+      const { data, error } = await db.from('muly_messages')
+        .select('id,sender_id,content,created_at')
+        .eq('couple_id', coupleInfo.couple_id)
+        .order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      const messages = (data || []).reverse();
+      const signature = messages.map(m => m.id).join('|');
+      if (force || signature !== lastSignature) {
+        const atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 90;
+        feed.replaceChildren();
+        for (const m of messages) {
+          const bubble = document.createElement('div');
+          bubble.className = 'muly-chat-msg' + (m.sender_id === user.id ? ' mine' : '');
+          const content = document.createElement('div');
+          content.textContent = m.content;
+          const stamp = document.createElement('small');
+          stamp.textContent = new Date(m.created_at).toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+          bubble.append(content, stamp); feed.append(bubble);
+        }
+        if (!messages.length) {
+          const empty = document.createElement('p'); empty.className = 'muted';
+          empty.textContent = 'İlk mesajınızı gönderin 💗'; feed.append(empty);
+        }
+        lastSignature = signature;
+        if (atBottom || force) scrollToBottom();
+      }
+      setStatus('💗 Sohbetiniz hazır');
+    } catch (e) { console.error('Muly Chat:', e); setStatus('❌ Mesajlar yüklenemedi: ' + e.message); }
+    finally { loading = false; }
+  }
+  async function syncChat() {
+    if (!(typeof db !== "undefined" && db) || !(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id)) {
+      if (channel && typeof db !== "undefined" && db) { await db.removeChannel(channel); channel = null; }
+      activeCouple = null; lastSignature = ''; feed.replaceChildren();
+      return;
+    }
+    const id = coupleInfo.couple_id;
+    if (activeCouple === id) return;
+    if (channel) { await db.removeChannel(channel); channel = null; }
+    activeCouple = id; lastSignature = '';
+    await loadMessages(true);
+    channel = db.channel('muly-chat-' + id)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'muly_messages', filter:'couple_id=eq.' + id }, () => loadMessages())
+      .subscribe();
+  }
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const content = input.value.trim();
+    if (!content || !(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id)) return;
+    send.disabled = true;
+    try {
+      const { error } = await db.from('muly_messages').insert({
+        couple_id: coupleInfo.couple_id, sender_id: user.id, content
+      });
+      if (error) throw error;
+      input.value = ''; await loadMessages(true);
+    } catch (e) { console.error('Muly Chat:', e); setStatus('❌ Mesaj gönderilemedi: ' + e.message); }
+    finally { send.disabled = false; input.focus(); }
+  });
+  document.querySelector('[data-tab="chat"]').addEventListener('click', () => {
+    syncChat().then(() => loadMessages(true));
+  });
+  // Giriş ve çift bağlantısı sonradan tamamlanırsa da sohbet açılır.
+  setInterval(() => {
+    if (!(typeof user !== "undefined" && user) || !(typeof coupleInfo !== "undefined" && coupleInfo?.couple_id)) {
+      if (activeCouple) syncChat(); return;
+    }
+    if (activeCouple !== coupleInfo.couple_id) syncChat();
+    else if (!document.getElementById('chat').classList.contains('hidden')) loadMessages();
+  }, 4000);
+})();
+</script>
+
+<script>
+// Muly baby: ortak veri, bildirim göndermez.
+(() => {
+  const $b = id => document.getElementById(id);
+  let baby = null, babyCouple = null, babyChannel = null, busy = false;
+  let modelReady = false, animateAction = 'idle';
+  const stage = $b('babyStage');
+  const clamp = n => Math.min(100, Math.max(0, n));
+  function renderBaby() {
+    if (!baby) return;
+    $b('babyNameDisplay').textContent = baby.name === 'Mini Muly' ? 'İsmini bekliyorum 🍼' : baby.name;
     $b('babyInfo').textContent = (baby.gender === 'girl' ? '👧 Kız' : '👦 Erkek') + ' · ⭐ Seviye ' + baby.level + ' · ' + baby.xp + ' XP';
     // İki hesap da isim düzenleyebilir.
     $b('babyNameControls').classList.toggle('hidden', !user || !coupleInfo);
