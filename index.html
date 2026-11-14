@@ -178,6 +178,14 @@ body.night .muly-bottom-bar button.active{background:#5a3b55;color:#fff0f5}
 .muly-achievement button{width:100%;padding:10px 8px;font-size:13px}.muly-achievement.done{border-color:#d6b4c3}
 @media(max-width:520px){.muly-achievements{grid-template-columns:1fr}}
 body.night .muly-achievement{background:#29263f}
+</style><style>/* Bebek marketi — uygulama görünümüne uyumlu */
+.baby-market{margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}
+.baby-market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.baby-product{border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--soft);display:flex;flex-direction:column;gap:7px}
+.baby-product .emoji{font-size:29px}.baby-product strong{font-size:14px}.baby-product small{line-height:1.5}
+.baby-product button{width:100%;padding:10px 7px;margin-top:auto;font-size:12px}
+body.night .baby-product{background:#29263f}
+@media(max-width:390px){.baby-market-grid{grid-template-columns:1fr}}
 </style></head>
 <body><div id="introCurtain" aria-hidden="true"><div>♡ Muly ♡<small>İKİ KALP · TEK HİKÂYE</small></div></div><div class="stars" id="stars" aria-hidden="true"></div>
 <header><h1><span>Muly</span> ♡</h1><div class="header-actions"><button id="rainToggle" class="secondary theme-toggle" type="button" style="display:none">🌧️ Yağmur</button><button id="themeToggle" class="secondary theme-toggle" type="button" aria-pressed="false">🌙 Gece modu</button><button id="logout" class="secondary hidden">Çıkış yap</button></div></header>
@@ -193,7 +201,7 @@ body.night .muly-achievement{background:#29263f}
 <div class="muly-topline"><h2>Bizim dünyamız ♡</h2><button type="button" class="secondary muly-settings-btn" id="mulySettingsToggle">⚙️ Ayarlar</button></div>
 <div class="muly-shortcuts" id="mulyShortcuts"><button class="muly-shortcut" data-open-tab="chat"><span class="emoji">💌</span>Sohbet</button><button class="muly-shortcut" data-open-tab="baby"><span class="emoji">🍼</span>Bebeğimiz</button><button class="muly-shortcut" data-open-tab="house"><span class="emoji">🏠</span>Evimiz</button><button class="muly-shortcut" data-open-tab="memories"><span class="emoji">📸</span>Anılar</button></div>
 <div class="card muly-nav-card"><button type="button" class="muly-nav-toggle" id="mulyNavToggle" aria-expanded="false" aria-controls="mulyNavPanel"><span>♡ Tüm bölümler</span><span id="mulyNavArrow">⌄</span></button><div class="muly-nav-panel" id="mulyNavPanel"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary" data-tab="house">🏠 Evimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="achievements">🏆 Başarımlar</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div></div>
-<section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
+<section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div><div class="baby-market"><h3>🛒 Bebek marketi</h3><p class="muted">Ortak aşk paranızla mama ve bakım ürünleri alın. Satın aldıklarınız ikinizin ortak çantasında saklanır.</p><div id="babyWallet" class="note">🪙 Bakiye yükleniyor…</div><div id="babyMarketList" class="baby-market-grid"></div><h3>🎒 Ortak çantamız</h3><div id="babyInventory" class="baby-market-grid"></div><p id="babyMarketStatus" class="muted" role="status"></p></div></section>
 <section id="house" class="card tab hidden"><h2>🏠 Muly Evimiz</h2><p class="intro">Birlikte aşk parası biriktirin, seviye atlayın ve evinizi döşeyin. Gerçek para kullanılmaz. 💗</p><div class="house-hud"><div class="mini">💗 Aşk seviyesi<strong id="houseLevel">—</strong></div><div class="mini">⭐ Aşk XP<strong id="houseXp">—</strong></div><div class="mini">🪙 Ortak para<strong id="houseCoins">—</strong></div></div><div class="house-stage" id="houseStage"><p class="muted" id="house3dStatus" style="padding:14px">3D ev hazırlanıyor…</p></div><div class="house-controls"><button type="button" id="houseDaily">🎁 Günlük ödülü al (+20 XP, +15 🪙)</button><button type="button" id="houseRotate" class="secondary">🔄 Kamerayı çevir</button></div><div class="house-controls"><select id="houseRoom" aria-label="Oda seçimi" style="flex:1;min-width:160px;margin:0"><option value="salon">🛋️ Salon · Seviye 1</option><option value="yatak">🛏️ Yatak odası · Seviye 4</option><option value="mutfak">🍳 Mutfak · Seviye 6</option><option value="bebek">🍼 Bebek odası · Seviye 8</option></select><button type="button" id="houseEdit" class="secondary">🪑 Düzenle</button><button type="button" id="houseTurn" class="secondary">↻ Eşyayı döndür</button><button type="button" id="houseSave">💾 Kaydet</button></div><p class="muted" id="houseEditHint">Düzenle ile eşyaya dokunup sürükle. Odalar aşk seviyesiyle açılır.</p><p class="muted" id="houseStatus" role="status">Ortak ev yükleniyor…</p><div class="note" id="houseRewardInfo">💗 XP: Günlük giriş +10, ilk kalp +15, anı/fotoğraf +20 (günde 2), bebek bakımı +5 (günde 4), günlük ödül +20. Para daha yavaş birikir.</div><h3>🛍️ Mobilya mağazası</h3><div id="houseShop" class="house-shop"></div></section>
 <section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
 <section id="memories" class="card tab"><h2>Ortak anılarımız 📸</h2><form id="memoryForm"><label>Başlık</label><input id="memoryTitle" maxlength="150" required><label>Anı</label><textarea id="memoryDescription" required></textarea><label>Tarih</label><input id="memoryDate" type="date" required><label>Fotoğraf (isteğe bağlı, en fazla 10 MB)</label><input id="memoryPhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button>Yeni anı ekle</button></form><div id="memoryList"></div></section>
@@ -530,17 +538,8 @@ if ('serviceWorker' in navigator) {
     }
   }
   let lastDecayCheck=0;
-  async function applyTimeDecay(record){
-    // Zamanla azalma yalnızca aktif oturumlarda hesaplanır.
-    const elapsed=Math.floor((Date.now()-new Date(record.updated_at).getTime())/3600000);
-    if(elapsed<1 || !Number.isFinite(elapsed))return record;
-    const hours=Math.min(elapsed,48);
-    const changes={hunger:Math.max(0,record.hunger-hours*3),energy:Math.max(0,record.energy-hours*2),hygiene:Math.max(0,record.hygiene-hours*2),happiness:Math.max(0,record.happiness-hours*2)};
-    const nextTime=new Date(new Date(record.updated_at).getTime()+hours*3600000).toISOString();
-    const {data,error}=await db.from('muly_babies').update({...changes,updated_at:nextTime}).eq('id',record.id).eq('updated_at',record.updated_at).select().maybeSingle();
-    if(error)console.warn('Bebek ihtiyaç güncelleme:',error);
-    return data||record;
-  }
+  // İhtiyaç güncellemeleri artık sunucudaki bakım işleminde hesaplanır.
+  async function applyTimeDecay(record){return record;}
   async function loadBaby() {
     if (!db || !user || !coupleInfo?.couple_id) return;
     const id=coupleInfo.couple_id;
@@ -560,22 +559,19 @@ if ('serviceWorker' in navigator) {
       babyCouple=coupleInfo.couple_id;
       babyChannel=db.channel('muly-baby-'+babyCouple).on('postgres_changes',{event:'*',schema:'public',table:'muly_babies',filter:'couple_id=eq.'+babyCouple},()=>loadBaby()).subscribe();
     }
-    await loadBaby();
+    await loadBaby();await loadBabyMarket();
     if(!modelReady) init3D();
   }
   async function act(action){
-    if(!baby || busy)return;
+    if(!baby||busy)return;
     busy=true;
     document.querySelectorAll('[data-baby-action]').forEach(b=>b.disabled=true);
-    const delta={feed:{hunger:20,energy:3},wash:{hygiene:25,happiness:4},sleep:{energy:25,hunger:-5},play:{happiness:20,energy:-8,hunger:-5}}[action];
     animateAction=action;
     try{
-      const next={};for(const key of ['hunger','happiness','energy','hygiene'])next[key]=clamp(baby[key]+(delta[key]||0));
-      next.xp=baby.xp+10;next.level=Math.floor(next.xp/100)+1;next.updated_at=new Date().toISOString();
-      const {data,error}=await db.from('muly_babies').update(next).eq('id',baby.id).select().single();
+      const {data,error}=await db.rpc('muly_baby_care_v2',{p_couple_id:coupleInfo.couple_id,p_action:action});
       if(error)throw error;
-      baby=data;renderBaby();window.mulyRefreshHouse?.();
-      $b('babyActionStatus').textContent={feed:'🍼 Karnı doydu!',wash:'🛁 Mis gibi temiz!',sleep:'😴 Dinlendi!',play:'🧸 Çok eğlendi!'}[action]+' +10 XP';
+      await loadBaby();await loadBabyMarket();window.mulyRefreshHouse?.();
+      $b('babyActionStatus').textContent='💗 '+(data?.message||'Bakım tamamlandı')+' · +'+(data?.xp||0)+' XP';
     }catch(e){$b('babyActionStatus').textContent='❌ '+e.message;}
     finally{busy=false;document.querySelectorAll('[data-baby-action]').forEach(b=>b.disabled=false);setTimeout(()=>animateAction='idle',1500);}
   }
@@ -583,10 +579,50 @@ if ('serviceWorker' in navigator) {
   $b('babySaveName').onclick=async()=>{
     const name=$b('babyNameInput').value.trim();if(!name||name.length>35||!baby)return;
     if(!user || !coupleInfo)return;
-    const {data,error}=await db.from('muly_babies').update({name,updated_at:new Date().toISOString()}).eq('id',baby.id).select().single();
+    const {data,error}=await db.rpc('muly_baby_rename_v2',{p_couple_id:coupleInfo.couple_id,p_name:name});
     if(error){$b('babyActionStatus').textContent='❌ '+error.message;return;}
-    baby=data;renderBaby();$b('babyActionStatus').textContent='💗 Bebeğimizin adı '+name+' oldu!';
+    await loadBaby();$b('babyActionStatus').textContent='💗 Bebeğimizin adı '+name+' oldu!';
   };
+  const catalog=[
+    {id:'milk',icon:'🍼',name:'Süt',price:10,detail:'Tokluk +16'},
+    {id:'formula',icon:'🥣',name:'Bebek maması',price:20,detail:'Tokluk +28'},
+    {id:'fruit',icon:'🍌',name:'Meyve püresi',price:30,detail:'Tokluk +38'},
+    {id:'soap',icon:'🫧',name:'Bebek şampuanı',price:15,detail:'Temizlik +30'},
+    {id:'toy',icon:'🧸',name:'Oyuncak',price:45,detail:'Mutluluk +30'}
+  ];
+  let marketBusy=false;
+  async function loadBabyMarket(){
+    if(!db||!coupleInfo?.couple_id)return;
+    const {data,error}=await db.rpc('muly_baby_market_state_v2',{p_couple_id:coupleInfo.couple_id});
+    if(error){$b('babyMarketStatus').textContent='❌ '+error.message;return;}
+    const balance=Number(data?.coins||0),inventory=data?.inventory||{};
+    $b('babyWallet').textContent='🪙 Ortak aşk parası: '+balance;
+    const root=$b('babyMarketList'),bag=$b('babyInventory');root.replaceChildren();bag.replaceChildren();
+    for(const item of catalog){
+      const card=document.createElement('div');card.className='baby-product';
+      const emoji=document.createElement('span');emoji.className='emoji';emoji.textContent=item.icon;
+      const name=document.createElement('strong');name.textContent=item.name;
+      const info=document.createElement('small');info.textContent=item.detail+' · '+item.price+' 🪙';
+      const btn=document.createElement('button');btn.textContent=balance<item.price?'🪙 Yetersiz':'Satın al';btn.disabled=balance<item.price||marketBusy;
+      btn.onclick=()=>marketAction('buy',item.id);
+      card.append(emoji,name,info,btn);root.append(card);
+      const owned=Number(inventory[item.id]||0);
+      if(owned>0){const box=document.createElement('div');box.className='baby-product';const label=document.createElement('strong');label.textContent=item.icon+' '+item.name+' ×'+owned;const use=document.createElement('button');use.className='secondary';use.textContent='Kullan';use.disabled=marketBusy;use.onclick=()=>marketAction('use',item.id);box.append(label,use);bag.append(box);}
+    }
+    if(!bag.children.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Çantanız boş. Markette alışveriş yapın 💗';bag.append(empty);}
+  }
+  async function marketAction(kind,id){
+    if(marketBusy)return;marketBusy=true;
+    try{
+      const rpc=kind==='buy'?'muly_baby_buy_v2':'muly_baby_use_v2';
+      const {data,error}=await db.rpc(rpc,{p_couple_id:coupleInfo.couple_id,p_item:id});
+      if(error)throw error;
+      $b('babyMarketStatus').textContent='💗 '+(data?.message||'İşlem tamamlandı');
+      await loadBaby();await loadBabyMarket();window.mulyRefreshHouse?.();
+    }catch(e){$b('babyMarketStatus').textContent='❌ '+e.message;}
+    finally{marketBusy=false;}
+  }
+
   document.querySelector('[data-tab="baby"]').addEventListener('click',syncBaby);
   setInterval(()=>{if(user && coupleInfo?.couple_id && !$b('baby').classList.contains('hidden'))syncBaby();},8000);
   async function init3D(){
