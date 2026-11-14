@@ -23,6 +23,12 @@ body.night.rainy:after{content:'';position:fixed;inset:0;z-index:0;pointer-event
 #notifCount{display:inline-block;min-width:20px;padding:2px 5px;background:#b85778;color:white;border-radius:99px;font-size:11px} .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.summary-grid .mini{text-align:center}.summary-grid strong{font-size:27px}
 @media(prefers-reduced-motion:reduce){#introCurtain{display:none}.shooting-star,.heart-burst{display:none}body.night.rainy:after{animation:none}}
 </style>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Muly">
 </head>
 <body><div id="introCurtain" aria-hidden="true"><div>♡ Muly ♡<small>İKİ KALP · TEK HİKÂYE</small></div></div><div class="stars" id="stars" aria-hidden="true"></div>
 <header><h1><span>Muly</span> ♡</h1><div class="header-actions"><button id="rainToggle" class="secondary theme-toggle" type="button" style="display:none">🌧️ Yağmur</button><button id="themeToggle" class="secondary theme-toggle" type="button" aria-pressed="false">🌙 Gece modu</button><button id="logout" class="secondary hidden">Çıkış yap</button></div></header>
@@ -165,6 +171,13 @@ function renderCelebrations(){const now=new Date();const day=now.getDate(),month
 const oldLoadEvents=loadEvents;loadEvents=async function(){await oldLoadEvents();renderCelebrations();};
 // Yılda bir tekrarlanan doğum günleri ve özel günler: takvimdeki başlığa "Doğum günü" yazılabilir.
 
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('Muly PWA:', err));
+  });
+}
 </script>
 </body>
 </html>
