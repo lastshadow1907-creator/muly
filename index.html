@@ -94,6 +94,8 @@ document.getElementById('themeToggle').addEventListener('click',()=>{const night
 const sky=document.getElementById('stars');for(let i=0;i<65;i++){const star=document.createElement('i');star.style.left=((i*73.37+11)%100)+'%';star.style.top=((i*47.91+7)%100)+'%';star.style.animationDelay=(-(i%11)*.37)+'s';star.style.animationDuration=(2+(i%5)*.7)+'s';sky.append(star);}
 
 // SADECE Project URL ve publishable / anon key kullan. Secret veya service_role anahtarı koyma.
+// Web Push public key (bildirim gönderimini tek başına etkinleştirmez)
+const VAPID_PUBLIC_KEY = 'BMlMvXTyMMrq0fQZHZw8igfMC7zJ839wtRTsIEwe_oDal0H3kRP2omh5ZJ1XlXs2EjZdI0hn9LHlzSI-3Bim468';
 const SUPABASE_URL = 'https://gzccrqrjmrdrluqqmrrz.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Dhuz9-JfiMSpaScysEvfPA_0sFxZ4rH';
 const $ = id => document.getElementById(id);
