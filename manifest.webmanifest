@@ -1,13 +1,12 @@
 {
-  "name": "Muly — Bizim Hikâyemiz",
-  "short_name": "Muly",
-  "description": "İkimize özel küçük dünyamız ❤️",
+  "name": "Love Call Muly",
+  "short_name": "Love Call Muly",
+  "description": "İkimizin küçük dünyası",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#fffaf4",
-  "theme_color": "#fff0f5",
-  "lang": "tr",
+  "background_color": "#e3aceb",
+  "theme_color": "#b86d88",
   "icons": [
     {
       "src": "/icon-192.png",
