@@ -220,7 +220,26 @@ $('firstForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disab
 function showOnThisDay(){const now=new Date(),m=now.getMonth()+1,d=now.getDate(),year=now.getFullYear();const all=[...cachedMemories.map(x=>({title:x.title,date:x.event_date})),...cachedFirsts.map(x=>({title:x.title,date:x.first_date}))];const matches=all.filter(x=>{const bits=(x.date||'').split('-').map(Number);return bits[0]<year&&bits[1]===m&&bits[2]===d;});$('onThisDay').textContent=matches.length?matches.map(x=>'💗 '+x.title+' · '+escapeSafeDate(x.date)).join('\n'):'Bugünün geçmiş yıllarına ait kayıtlı bir anınız henüz yok.';}
 const oldLoadMemories=loadMemories;loadMemories=async function(){await oldLoadMemories();showOnThisDay();};
 async function loadHearts(){if(!coupleInfo)return;const {data,error}=await db.from('muly_hearts').select('sender_id,created_at').eq('couple_id',coupleInfo.couple_id).order('created_at',{ascending:false}).limit(20);if(error)return fail(error);const root=$('heartHistory');root.replaceChildren();for(const h of data||[])root.append(el('div',(h.sender_id===user.id?'Sen kalp gönderdin':'Sevgilin sana kalp gönderdi')+' 💗 · '+formatDate(h.created_at),'note'));}
-$('sendHeart').onclick=async()=>{const b=$('sendHeart');b.disabled=true;try{const {error}=await db.rpc('muly_send_heart');if(error)throw error;heartAnimation();notice('Kalbin sevgiline ulaştı 💗');await loadHearts();}catch(e){fail(e);}finally{b.disabled=false;}};
+$('sendHeart').onclick=async()=>{
+  const b=$('sendHeart');b.disabled=true;
+  try{
+    const {error}=await db.rpc('muly_send_heart');
+    if(error)throw error;
+    heartAnimation();
+    await loadHearts();
+    // Kalp kaydı başarılı olsa bile push gönderimi başarısız olabilir.
+    try{
+      const {data,error:pushError}=await db.functions.invoke('send-heart-push',{body:{}});
+      if(pushError)throw pushError;
+      if(data?.error)throw new Error(data.error);
+      notice(data?.sent>0?'Kalbin gönderildi, telefon bildirimi de yollandı 💗':
+        'Kalbin gönderildi 💗 Telefon bildirimi gönderilemedi: '+(data?.message||'Alıcı cihazı kayıtlı olmayabilir.'));
+    }catch(pushErr){
+      console.warn('Muly push:',pushErr);
+      notice('Kalbin gönderildi 💗 Ancak telefon bildirimi gönderilemedi. Edge Function loglarını kontrol et.');
+    }
+  }catch(e){fail(e);}finally{b.disabled=false;}
+};
 async function loadNotifications(){if(!user||!coupleInfo)return;const {data,error}=await db.from('muly_notifications').select('id,body,read_at,created_at').eq('recipient_id',user.id).order('created_at',{ascending:false}).limit(60);if(error)return fail(error);$('notifCount').textContent=(data||[]).filter(x=>!x.read_at).length;const root=$('notificationList');root.replaceChildren();for(const n of data||[]){const div=el('div',undefined,'note');div.append(el('strong',n.read_at?'♡ ':'💗 '),document.createTextNode(n.body+' · '+formatDate(n.created_at)));root.append(div);}if(!data?.length)root.append(el('p','Henüz bildirim yok.','muted'));}
 $('markNotifications').onclick=async()=>{const {error}=await db.from('muly_notifications').update({read_at:new Date().toISOString()}).eq('recipient_id',user.id).is('read_at',null);if(error)fail(error);else await loadNotifications();};
 async function loadMonthlySummary(){if(!coupleInfo)return;const now=new Date();const start=new Date(now.getFullYear(),now.getMonth(),1).toISOString(),end=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString();const queries=[db.from('memories').select('id',{count:'exact',head:true}).gte('created_at',start).lt('created_at',end),db.from('wishes').select('id',{count:'exact',head:true}).eq('completed',true),db.from('muly_hearts').select('id',{count:'exact',head:true}).eq('couple_id',coupleInfo.couple_id).gte('created_at',start).lt('created_at',end),db.from('love_moods').select('id',{count:'exact',head:true}).eq('couple_id',coupleInfo.couple_id).gte('created_at',start).lt('created_at',end)];const results=await Promise.all(queries);const labels=['Bu ay eklenen anılar','Tamamlanan hayaller (toplam)','Bu ay gönderilen kalpler','Bu ay paylaşılan ruh halleri'];const root=$('summaryDisplay');root.replaceChildren();results.forEach((r,i)=>{if(r.error){fail(r.error);return;}const box=el('div',undefined,'mini');box.append(el('small',labels[i]),el('strong',String(r.count??0)));root.append(box);});showOnThisDay();}
