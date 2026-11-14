@@ -102,10 +102,6 @@ body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .m
 
 /* Muly ortak ev */
 .house-hud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}.house-hud .mini{padding:13px;text-align:center}.house-hud strong{font-size:20px}.house-stage{height:410px;border-radius:21px;overflow:hidden;background:linear-gradient(#fff3f4,#f7d9df);position:relative}.house-stage canvas{display:block;width:100%;height:100%}.house-shop{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.house-product{border:1px solid var(--line);border-radius:15px;padding:13px;background:var(--soft)}.house-product button{width:100%;margin-top:8px;padding:9px}.house-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.house-controls button{padding:9px 12px}body.night .house-stage{background:#28243e}@media(max-width:560px){.house-hud{grid-template-columns:1fr 1fr}.house-stage{height:320px}.house-shop{grid-template-columns:1fr}}
-
-/* Kalbime Dokun */
-.touch-stage{position:relative;min-height:240px;border-radius:24px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle,#ffe2ec,#fff6f8 70%);border:1px solid var(--line)}
-.touch-main{font-size:76px;background:transparent;border:0;box-shadow:none;filter:drop-shadow(0 8px 12px #b9527960);animation:loveBeat 2.4s infinite}.touch-main:hover{background:transparent}.touch-overlay{position:fixed;inset:0;z-index:80;pointer-events:none;display:grid;place-items:center;background:#ffbdd033;animation:touchFade 2.8s forwards}.touch-overlay strong{background:#fff7fa;padding:24px;border-radius:22px;color:#923d63;text-align:center;font-size:clamp(20px,5vw,34px);box-shadow:0 12px 40px #9e4c7060}.touch-spark{position:fixed;z-index:81;pointer-events:none;font-size:30px;animation:touchFly 2.5s ease-out forwards}@keyframes touchFly{to{transform:translate(var(--dx),-75vh) rotate(45deg);opacity:0}}@keyframes touchFade{0%,70%{opacity:1}100%{opacity:0}}body.night .touch-stage{background:radial-gradient(circle,#60304e,#28243e)}
 </style>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
@@ -125,8 +121,7 @@ body.night .muly-chat-feed{background:#252238;border-color:#65506a}body.night .m
 <section id="pair" class="card hidden"><div class="auth-mark">♡</div><h2>İkinizin alanını oluşturun 💌</h2><p>Biriniz çift alanı oluşturup davet kodunu diğerine göndersin. Diğeri kendi hesabından kodla katılsın.</p><button id="createPair">Davet kodu oluştur</button><hr style="border:0;border-top:1px solid #f5d7e3;margin:22px 0"><label>Davet kodu</label><input id="inviteInput" placeholder="Davet kodunu yaz"><button id="joinPair">Koda katıl</button></section>
 <section id="app" class="hidden"><div class="card" id="pushSettings"><h2>🔔 Telefon bildirimleri</h2><p class="intro">Sevgilinden kalp geldiğinde telefonunda bildirim görmek için bu cihazda izin ver.</p><button id="enablePush" type="button">🔔 Bildirimleri Aç</button><p class="muted" id="pushStatus" aria-live="polite">Henüz kontrol edilmedi.</p></div><div class="card relationship-card"><div class="section-kicker">♡ 14.03.2026 · 00:08 ♡</div><h2>Seninle geçen her saniye</h2><p class="intro">Birlikte yazdığımız hikâyenin başladığı o güzel andan beri…</p><div class="timer live-timer"><div><small>Gün</small><strong id="elapsed">—</strong></div><div><small>Saat</small><strong id="elapsedHours">—</strong></div><div><small>Dakika</small><strong id="elapsedMinutes">—</strong></div><div><small>Saniye</small><strong id="elapsedSeconds">—</strong></div></div><p class="anniversary-countdown">İlk yıl dönümümüze <strong id="remaining">—</strong></p><p class="muted" id="pairStatus"></p></div>
 <section class="card anniversary" id="anniversaryCard"><div class="section-kicker">14 MART · BİZİM GÜNÜMÜZ</div><h2 id="anniversaryTitle">İyi ki sen ♡</h2><p id="anniversaryText">Birlikte yazacağımız daha nice güzel yıllara...</p></section><div id="specialCelebrations"></div>
-<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary" data-tab="house">🏠 Evimiz</button><button class="secondary" data-tab="touch">💓 Kalbime Dokun</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
-<section id="touch" class="card tab hidden"><h2>💓 Kalbime Dokun</h2><p class="intro">Kalbine dokun; sevgilinin Muly ekranında sevgin canlansın. Sadece site açıkken canlı animasyon görünür.</p><div class="touch-stage"><button id="touchSend" class="touch-main" type="button" aria-label="Sevgilimin kalbine dokun">💗</button></div><p id="touchStatus" class="muted" role="status">Hazırlanıyor…</p><div id="touchStreak" class="note">🔥 Kalp seriniz yükleniyor…</div><div id="touchHistory"></div></section>
+<div class="card"><div class="feature-nav" id="featureNav"><button class="secondary" data-tab="chat">💌 Muly Chat</button><button class="secondary" data-tab="baby">🍼 Bebeğimiz</button><button class="secondary" data-tab="house">🏠 Evimiz</button><button class="secondary active" data-tab="memories">📸 Anılar</button><button class="secondary" data-tab="sky">✨ Gökyüzümüz</button><button class="secondary" data-tab="calendar">📅 Takvim</button><button class="secondary" data-tab="wishes">🎀 Hayaller</button><button class="secondary" data-tab="miss">❤️ Seni özledim</button><button class="secondary" data-tab="moods">🥹 Ruh halimiz</button><button class="secondary" data-tab="music">🎵 Şarkımız</button><button class="secondary" data-tab="letters">💌 Mektuplar</button><button class="secondary" data-tab="firsts">🌸 İlklerimiz</button><button class="secondary" data-tab="summary">📊 Aylık özet</button><button class="secondary" data-tab="hearts">💗 Kalp gönder</button><button class="secondary" data-tab="notifications">🔔 Bildirimler <span id="notifCount">0</span></button></div></div>
 <section id="baby" class="card tab hidden"><h2>🍼 Ortak bebeğimiz</h2><p class="intro">Birlikte büyüttüğünüz minik mutluluk. İsmini ikiniz de koyabilirsiniz 💗</p><h3 id="babyNameDisplay">İsmini bekliyorum 🍼</h3><p id="babyInfo" class="muted">Bebek hazırlanıyor…</p><div id="babySpeech" class="baby-speech" role="status">Merhaba! 💗</div><div id="babyXp" class="baby-xp"></div><div class="baby-name-controls hidden" id="babyNameControls"><label>Bebeğimize bir isim ver 💗</label><input id="babyNameInput" maxlength="35" placeholder="Bebeğin adı"><button type="button" id="babySaveName">💗 İsmini kaydet</button></div><div class="baby-layout"><div class="baby-stage" id="babyStage"><p class="muted" id="baby3dStatus" style="padding:15px">3D bebek yükleniyor…</p></div><div><div class="baby-stats" id="babyStats"></div><div class="baby-actions"><button type="button" data-baby-action="feed">🍼 Besle</button><button type="button" data-baby-action="wash">🛁 Yıka</button><button type="button" data-baby-action="sleep">😴 Uyut</button><button type="button" data-baby-action="play">🧸 Oyna</button></div><p class="muted" id="babyActionStatus" aria-live="polite"></p></div></div></section>
 <section id="house" class="card tab hidden"><h2>🏠 Muly Evimiz</h2><p class="intro">Birlikte aşk parası biriktirin, seviye atlayın ve evinizi döşeyin. Gerçek para kullanılmaz. 💗</p><div class="house-hud"><div class="mini">💗 Aşk seviyesi<strong id="houseLevel">—</strong></div><div class="mini">⭐ Aşk XP<strong id="houseXp">—</strong></div><div class="mini">🪙 Ortak para<strong id="houseCoins">—</strong></div></div><div class="house-stage" id="houseStage"><p class="muted" id="house3dStatus" style="padding:14px">3D ev hazırlanıyor…</p></div><div class="house-controls"><button type="button" id="houseDaily">🎁 Günlük ödülü al (+20 XP, +15 🪙)</button><button type="button" id="houseRotate" class="secondary">🔄 Kamerayı çevir</button></div><p class="muted" id="houseStatus" role="status">Ortak ev yükleniyor…</p><div class="note" id="houseRewardInfo">💗 XP: Günlük giriş +10, ilk kalp +15, anı/fotoğraf +20 (günde 2), bebek bakımı +5 (günde 4), günlük ödül +20. Para daha yavaş birikir.</div><h3>🛍️ Mobilya mağazası</h3><div id="houseShop" class="house-shop"></div></section>
 <section id="chat" class="card tab hidden"><h2>Bizim sohbetimiz 💌</h2><p class="intro">Sadece ikinizin görebildiği özel mesajlar ♡</p><div id="mulyChatStatus" class="muted" role="status">Sohbet hazırlanıyor…</div><div id="mulyChatFeed" class="muly-chat-feed" aria-live="polite"></div><form id="mulyChatForm" class="muly-chat-compose"><textarea id="mulyChatText" rows="1" maxlength="5000" required placeholder="Kalbinden geçenleri yaz… 💗" aria-label="Mesajın"></textarea><button id="mulyChatSend" type="submit">Gönder 💌</button></form></section>
@@ -626,48 +621,6 @@ const light=new THREE.HemisphereLight(0xffffff,0xcaa9ac,2);scene.add(light);cons
 const resize=()=>{const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(stage);resize();renderItems(items);
 function loop(){requestAnimationFrame(loop);camera.position.set(7*Math.sin(angle),5.5,7*Math.cos(angle));camera.lookAt(0,.45,0);renderer.render(scene,camera);}loop();}
 window.mulyInitHouse=init;window.mulyRenderHouse=renderItems;window.mulyRotateHouse=()=>{angle+=Math.PI/4;};
-</script>
-
-<script>
-/* Kalbime Dokun: RPC authorization + per-user daily dedupe on server. No chat push. */
-(()=>{
- const send=document.getElementById('touchSend'), status=document.getElementById('touchStatus'), streak=document.getElementById('touchStreak'), history=document.getElementById('touchHistory');
- let currentCouple=null,channel=null,lastSeen=null,poll=null,loading=false;
- function animate(sender){
-  const overlay=document.createElement('div');overlay.className='touch-overlay';
-  const title=document.createElement('strong');title.textContent=sender==='me'?'💗 Kalbine dokundun!':'💓 Sevgilin kalbine dokundu!';overlay.append(title);document.body.append(overlay);
-  for(let i=0;i<22;i++){const h=document.createElement('span');h.className='touch-spark';h.textContent=i%3?'💗':'💕';h.style.left=(10+Math.random()*80)+'vw';h.style.top=(65+Math.random()*25)+'vh';h.style.setProperty('--dx',((Math.random()-.5)*300)+'px');h.style.animationDelay=(i*.045)+'s';document.body.append(h);setTimeout(()=>h.remove(),3300);}
-  setTimeout(()=>overlay.remove(),2900);
-  if(sender!=='me'&&typeof navigator.vibrate==='function')navigator.vibrate([100,60,100]);
- }
- async function load(){
-  if(loading||!currentCouple||!db||!user)return;loading=true;
-  try{
-   const {data,error}=await db.rpc('muly_touch_state');if(error)throw error;
-   const rows=data?.recent||[];
-   if(lastSeen&&rows.length){const incoming=rows.filter(x=>x.sender_id!==user.id&&new Date(x.created_at)>new Date(lastSeen));if(incoming.length&&document.visibilityState==='visible')animate('partner');}
-   if(rows.length){const newest=rows.reduce((a,b)=>new Date(a.created_at)>new Date(b.created_at)?a:b);if(!lastSeen||new Date(newest.created_at)>new Date(lastSeen))lastSeen=newest.created_at;}
-   streak.textContent='🔥 Ortak kalp seriniz: '+(data?.streak??0)+' gün · Bugün: '+(data?.today_count??0)+' dokunuş';
-   history.replaceChildren();rows.slice(0,8).forEach(x=>{const d=document.createElement('div');d.className='note';d.textContent=(x.sender_id===user.id?'Sen':'Sevgilin')+' 💓 '+new Date(x.created_at).toLocaleString('tr-TR');history.append(d);});
-   status.textContent='💗 Kalpleriniz bağlı';
-  }catch(e){status.textContent='❌ '+e.message;}finally{loading=false;}
- }
- async function sync(){const id=typeof coupleInfo!=='undefined'&&coupleInfo?.couple_id;
-  if(!id){if(channel&&db)await db.removeChannel(channel);channel=null;currentCouple=null;lastSeen=null;clearInterval(poll);poll=null;return;}
-  if(id===currentCouple)return;
-  if(channel&&db)await db.removeChannel(channel);clearInterval(poll);currentCouple=id;lastSeen=null;
-  await load();
-  channel=db.channel('muly-touch-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'muly_touches',filter:'couple_id=eq.'+id},()=>load()).subscribe();
-  poll=setInterval(()=>{if(document.visibilityState==='visible')load();},5000);
- }
- send.addEventListener('click',async()=>{if(!currentCouple)return;send.disabled=true;try{const {error}=await db.rpc('muly_touch_send');if(error)throw error;animate('me');await load();}catch(e){status.textContent='❌ '+e.message;}finally{send.disabled=false;}});
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')load();});
- const original=window.mulyTouchSync;window.mulyTouchSync=()=>{original?.();sync().catch(console.error);};
- const oldLoadCouple=loadCouple;loadCouple=async function(){await oldLoadCouple();await sync();};
- // On logout, auth state invokes setSession; sync runs on next login, reset via auth listener.
- const oldSetSession=setSession;setSession=async function(session){await oldSetSession(session);await sync();};
- setTimeout(()=>sync().catch(console.error),800);
-})();
 </script>
 </body>
 </html>
