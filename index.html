@@ -1134,7 +1134,38 @@ $('mvOpen').addEventListener('click',async()=>{if(loading||!active())return;load
 document.querySelectorAll('[data-tab="vending"]').forEach(b=>b.addEventListener('click',()=>refresh().catch(e=>say('mvStatus','❌ '+e.message))));
 async function newspaper(){if(!active())return;say('m5PaperStatus','Gazete hazırlanıyor…');try{const {data,error}=await db.rpc('muly_newspaper_v5',{p_couple_id:coupleInfo.couple_id});if(error)throw error;const d=data||{},stats=[['💬 Mesaj',d.messages],['📸 Anı',d.memories],['💗 Kalp',d.hearts],['🪙 Görev',d.tasks]];const paper=$('m5Paper');paper.replaceChildren();const title=document.createElement('h3');title.textContent='THE MULY TIMES ♡';const date=document.createElement('p');date.style.textAlign='center';date.textContent='Haftalık sayı · '+new Date(d.week_start).toLocaleDateString('tr-TR')+' – '+new Date(d.week_end).toLocaleDateString('tr-TR');const headline=document.createElement('h2');headline.textContent='Bu hafta birlikte yazdığımız hikâye';const grid=document.createElement('div');grid.className='m5-grid';for(const [name,value] of stats){const cell=document.createElement('div');cell.className='m5-stat';const strong=document.createElement('strong');strong.textContent=String(value??0);const span=document.createElement('span');span.textContent=name;cell.append(strong,span);grid.append(cell);}const end=document.createElement('p');end.style.textAlign='center';end.textContent='14.03.2026’dan beri, her yeni hafta bizim hikâyemizin yeni sayfası. ♡';paper.append(title,date,headline,grid,end);say('m5PaperStatus','📰 Bu haftanın istatistikleri yüklendi.');}catch(e){say('m5PaperStatus','❌ '+e.message);}}
 $('m5PaperRefresh').onclick=newspaper;
-$('m5PaperPrint').onclick=()=>{const w=window.open('','_blank');if(!w){say('m5PaperStatus','Tarayıcı yeni pencereyi engelledi.');return;}const styles='body{font-family:Georgia,serif;padding:24px;color:#60483e}.m5-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.m5-stat{border:1px solid #ddd;padding:14px}h3{text-align:center;font-size:30px}strong{font-size:24px;display:block}';w.document.write('<!doctype html><html lang="tr"><meta charset="utf-8"><title>Muly Gazetesi</title><style>'+styles+'</style><body>'+$('m5Paper').innerHTML+'<script id="muly-suite-fixed">(()=>{'use strict';
+$('m5PaperPrint').onclick=()=>{const w=window.open('','_blank');if(!w){say('m5PaperStatus','Tarayıcı yeni pencereyi engelledi.');return;}const styles='body{font-family:Georgia,serif;padding:24px;color:#60483e}.m5-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.m5-stat{border:1px solid #ddd;padding:14px}h3{text-align:center;font-size:30px}strong{font-size:24px;display:block}';w.document.write('<!doctype html><html lang="tr"><meta charset="utf-8"><title>Muly Gazetesi</title><style>'+styles+'</style><body>'+$('m5Paper').innerHTML+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),300);};
+document.querySelectorAll('[data-tab="newspaper"]').forEach(b=>b.addEventListener('click',newspaper));
+})();
+</script>
+<script id="muly-polish-v7-js">
+(()=>{
+  'use strict';
+  // Browser-native lazy image decoding, without changing image URLs or data.
+  document.querySelectorAll('img').forEach(img=>{
+    if(!img.hasAttribute('decoding')) img.decoding='async';
+    if(!img.hasAttribute('loading') && !img.closest('header')) img.loading='lazy';
+  });
+  // Animate only a confirmed prize result. Does not alter purchase requests.
+  const status=document.getElementById('mvStatus');
+  const machine=document.querySelector('.mv-machine');
+  if(status&&machine&&typeof MutationObserver!=='undefined'){
+    let clearTimer;
+    const observer=new MutationObserver(()=>{
+      if(!status.textContent.trim().startsWith('🎉')) return;
+      if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      machine.classList.remove('muly-celebrate');
+      void machine.offsetWidth;
+      machine.classList.add('muly-celebrate');
+      clearTimeout(clearTimer);
+      clearTimer=setTimeout(()=>machine.classList.remove('muly-celebrate'),850);
+    });
+    observer.observe(status,{childList:true,characterData:true,subtree:true});
+  }
+})();
+</script>
+<script id="muly-ui-v8-js">(()=>{const nav=document.getElementById('mulyNavPanel');const feature=document.getElementById('featureNav');if(!nav||!feature)return;const input=document.createElement('input');input.id='m8Search';input.type='search';input.placeholder='Bölüm ara… (ör. Otomat, Gazete)';input.setAttribute('aria-label','Bölüm ara');const empty=document.createElement('p');empty.id='m8Empty';empty.hidden=true;empty.textContent='Bu isimde bölüm bulunamadı.';nav.insertBefore(input,feature);nav.appendChild(empty);const buttons=[...feature.querySelectorAll('button[data-tab]')];input.addEventListener('input',()=>{const q=input.value.toLocaleLowerCase('tr-TR').trim();let count=0;buttons.forEach(b=>{const visible=b.textContent.toLocaleLowerCase('tr-TR').includes(q);b.style.display=visible?'':'none';if(visible)count++});empty.hidden=count>0});buttons.forEach(b=>b.addEventListener('click',()=>{input.value='';input.dispatchEvent(new Event('input'))}));})();</script>
+<script id="muly-suite-fixed">(()=>{'use strict';
 const $=id=>document.getElementById(id);let timer=null, busy=false, previousCouple=null, seenClub=null, beatCtx=null, tvItems=[],tvIndex=0,tvPlaying=false,tvTimer=null;
 const status=(id,msg)=>{if($(id))$(id).textContent=msg};
 const ready=()=>typeof db!=='undefined'&&db&&typeof user!=='undefined'&&user&&typeof coupleInfo!=='undefined'&&coupleInfo?.couple_id;
@@ -1175,36 +1206,6 @@ function applyModules(){const hidden=hiddenModules();document.querySelectorAll('
 $('modulesSave').onclick=()=>{localStorage.setItem('mx-hidden-modules',JSON.stringify([...$('moduleList').querySelectorAll('input:not(:checked)')].map(x=>x.value)));applyModules();status('modulesStatus','✓ Kaydedildi')};$('modulesAll').onclick=()=>{$('moduleList').querySelectorAll('input').forEach(x=>x.checked=true);$('modulesSave').click()};
 async function sync(){if(!ready()||busy)return;busy=true;try{if(previousCouple!==coupleInfo.couple_id){previousCouple=coupleInfo.couple_id;seenClub=null;await loadTV()}const [club,invites,rules,logs]=await Promise.all([rows('club'),rows('invite'),rows('rule'),rows('auto_log')]);if(club.length&&seenClub!==club[0].id){seenClub=club[0].id;clubRender(club[0].payload||{})}renderInvites(invites);renderRules(rules,logs)}catch(e){report('autoStatus',e);report('inviteStatus',e)}finally{busy=false}}
 const app=$('app');const observer=new MutationObserver(()=>{if(!app.classList.contains('hidden')&&ready()){sync();if(!timer)timer=setInterval(()=>{if(!document.hidden)sync()},6000)}else if(timer){clearInterval(timer);timer=null;previousCouple=null;stopTV()}});observer.observe(app,{attributes:true,attributeFilter:['class']});if(!app.classList.contains('hidden'))sync();document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
-})();</script></body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),300);};
-document.querySelectorAll('[data-tab="newspaper"]').forEach(b=>b.addEventListener('click',newspaper));
-})();
-</script>
-<script id="muly-polish-v7-js">
-(()=>{
-  'use strict';
-  // Browser-native lazy image decoding, without changing image URLs or data.
-  document.querySelectorAll('img').forEach(img=>{
-    if(!img.hasAttribute('decoding')) img.decoding='async';
-    if(!img.hasAttribute('loading') && !img.closest('header')) img.loading='lazy';
-  });
-  // Animate only a confirmed prize result. Does not alter purchase requests.
-  const status=document.getElementById('mvStatus');
-  const machine=document.querySelector('.mv-machine');
-  if(status&&machine&&typeof MutationObserver!=='undefined'){
-    let clearTimer;
-    const observer=new MutationObserver(()=>{
-      if(!status.textContent.trim().startsWith('🎉')) return;
-      if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-      machine.classList.remove('muly-celebrate');
-      void machine.offsetWidth;
-      machine.classList.add('muly-celebrate');
-      clearTimeout(clearTimer);
-      clearTimer=setTimeout(()=>machine.classList.remove('muly-celebrate'),850);
-    });
-    observer.observe(status,{childList:true,characterData:true,subtree:true});
-  }
-})();
-</script>
-<script id="muly-ui-v8-js">(()=>{const nav=document.getElementById('mulyNavPanel');const feature=document.getElementById('featureNav');if(!nav||!feature)return;const input=document.createElement('input');input.id='m8Search';input.type='search';input.placeholder='Bölüm ara… (ör. Otomat, Gazete)';input.setAttribute('aria-label','Bölüm ara');const empty=document.createElement('p');empty.id='m8Empty';empty.hidden=true;empty.textContent='Bu isimde bölüm bulunamadı.';nav.insertBefore(input,feature);nav.appendChild(empty);const buttons=[...feature.querySelectorAll('button[data-tab]')];input.addEventListener('input',()=>{const q=input.value.toLocaleLowerCase('tr-TR').trim();let count=0;buttons.forEach(b=>{const visible=b.textContent.toLocaleLowerCase('tr-TR').includes(q);b.style.display=visible?'':'none';if(visible)count++});empty.hidden=count>0});buttons.forEach(b=>b.addEventListener('click',()=>{input.value='';input.dispatchEvent(new Event('input'))}));})();</script>
+})();</script>
 </body>
 </html>
