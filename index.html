@@ -1,14 +1,57 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Muly ❤️ Olcay</title>
-  <meta name="theme-color" content="#fff0f5">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fff0f5"><title>Muly ❤️ Bizim Hikâyemiz</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#4b2438;background:#fff3f7}*{box-sizing:border-box}body{margin:0}header{background:#fff9fc;border-bottom:1px solid #f4d5e2;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:26px;margin:0;color:#c33372}h2{margin:0 0 16px;font-size:21px}main{max-width:900px;margin:25px auto;padding:0 16px}.card{background:white;border:1px solid #f5d7e3;border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 5px 25px #a92c5b0a}input,textarea,button{font:inherit}input,textarea{width:100%;padding:12px;border:1px solid #e8bfd0;border-radius:11px;margin:7px 0 12px;background:#fffafd}textarea{min-height:90px;resize:vertical}button{background:#d73b7c;color:white;border:0;border-radius:11px;padding:11px 16px;cursor:pointer}button.secondary{background:#f8dce8;color:#7c2c51}button:disabled{opacity:.5;cursor:wait}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.muted{color:#86677a;font-size:14px}.hidden{display:none!important}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tabs button{flex:1;min-width:120px}.item{padding:13px 0;border-top:1px solid #f5e2ea;overflow-wrap:anywhere}.item:first-child{border-top:0}.item h3{margin:0 0 5px}.item p{white-space:pre-wrap;margin:5px 0}.timer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.timer>div{background:#fff0f6;padding:16px;border-radius:14px;text-align:center}.timer strong{display:block;font-size:21px;color:#bc2d6b}#notice{padding:12px;border-radius:12px;background:#fff0f6;margin:12px 0;white-space:pre-wrap}small{color:#86677a}label{display:block;font-weight:600;margin-top:5px}@media(max-width:550px){header{padding:14px}h1{font-size:23px}.card{padding:17px}.timer{grid-template-columns:1fr}.row>*{flex-basis:100%}}
+</style>
 </head>
 <body>
-  <h1>Bizim Hikayemiz ❤️</h1>
-  <p>Birlikte yazdığımız sonsuz bir hikâye...</p>
+<header><h1>Muly ♡</h1><button id="logout" class="secondary hidden">Çıkış yap</button></header>
+<main>
+<div id="notice" class="hidden" role="status"></div>
+<section id="setup" class="card"><h2>Önce bağlantıyı tamamla</h2><p>Bu dosyada <code>SUPABASE_URL</code> ve <code>SUPABASE_KEY</code> alanlarını kendi Supabase proje bilgilerinle değiştir.</p></section>
+<section id="auth" class="card hidden"><h2>Bizim hikâyemize hoş geldin ❤️</h2><form id="authForm"><label>E-posta</label><input id="email" type="email" required autocomplete="email"><label>Şifre</label><input id="password" type="password" required minlength="6" autocomplete="current-password"><div class="row"><button type="submit" id="loginBtn">Giriş yap</button><button type="button" class="secondary" id="signupBtn">Hesap oluştur</button></div></form><p class="muted">Kayıt sonrası e-posta doğrulaması gerekebilir.</p></section>
+<section id="pair" class="card hidden"><h2>İkinizin alanını oluşturun 💌</h2><p>Biriniz çift alanı oluşturup davet kodunu diğerine göndersin. Diğeri kendi hesabından kodla katılsın.</p><button id="createPair">Davet kodu oluştur</button><hr style="border:0;border-top:1px solid #f5d7e3;margin:22px 0"><label>Davet kodu</label><input id="inviteInput" placeholder="Davet kodunu yaz"><button id="joinPair">Koda katıl</button></section>
+<section id="app" class="hidden"><div class="card"><h2>14 Mart 2026'dan beri ❤️</h2><div class="timer"><div><small>Birlikte geçen süre</small><strong id="elapsed">—</strong></div><div><small>İlk yıl dönümüne kalan</small><strong id="remaining">—</strong></div></div><p class="muted" id="pairStatus"></p></div>
+<div class="card"><div class="tabs"><button class="secondary" data-tab="memories">Anılarımız</button><button class="secondary" data-tab="wishes">Hayallerimiz</button><button class="secondary" data-tab="letters">Mektuplarımız</button></div></div>
+<section id="memories" class="card tab"><h2>Ortak anılarımız 📸</h2><form id="memoryForm"><label>Başlık</label><input id="memoryTitle" maxlength="150" required><label>Anı</label><textarea id="memoryDescription" required></textarea><label>Tarih</label><input id="memoryDate" type="date" required><button>Yeni anı ekle</button></form><div id="memoryList"></div></section>
+<section id="wishes" class="card tab hidden"><h2>Birlikte yapacaklarımız ✨</h2><form id="wishForm"><label>Hayalimiz</label><input id="wishTitle" maxlength="200" required><button>Listeye ekle</button></form><div id="wishList"></div></section>
+<section id="letters" class="card tab hidden"><h2>Kalbimizden mektuplar 💌</h2><p class="muted">Gönderdiğin mektubu sen görebilirsin; alıcısı yalnızca belirlediğin tarihten sonra okuyabilir.</p><form id="letterForm"><label>Başlık</label><input id="letterTitle" maxlength="150" required><label>Mektup</label><textarea id="letterContent" required></textarea><label>Açılacağı tarih ve saat</label><input id="unlockAt" type="datetime-local" required><button id="sendLetter">Mektubu gönder</button></form><div id="letterList"></div></section>
+</section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// SADECE Project URL ve publishable / anon key kullan. Secret veya service_role anahtarı koyma.
+const SUPABASE_URL = 'https://gzccrqrjmrdrluqqmrrz.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_Dhuz9-JfiMSpaScysEvfPA_0sFxZ4rH';
+const $ = id => document.getElementById(id);
+const show = (id,yes=true) => $(id).classList.toggle('hidden',!yes);
+const notice = msg => { $('notice').textContent=msg; show('notice',!!msg); };
+let db,user,partnerId=null,coupleInfo=null;
+const formatDate = x => new Date(x).toLocaleString('tr-TR');
+function el(tag,content,cls){const node=document.createElement(tag);if(content!==undefined)node.textContent=content;if(cls)node.className=cls;return node;}
+function fail(err){notice(err?.message || 'Bir hata oluştu.');console.error(err);}
+function tick(){const now=new Date();const start=new Date('2026-03-14T00:00:00+03:00');const anniversary=new Date('2027-03-14T00:00:00+03:00');const days=Math.max(0,Math.floor((now-start)/86400000));$('elapsed').textContent=days+' gün';const diff=anniversary-now;$('remaining').textContent=diff>0?Math.ceil(diff/86400000)+' gün':'İlk yılımız kutlu olsun!';}
+async function init(){if(SUPABASE_URL.includes('BURAYA_')||SUPABASE_KEY.includes('BURAYA_'))return;show('setup',false);try{db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const {data:{session},error}=await db.auth.getSession();if(error)throw error;await setSession(session);db.auth.onAuthStateChange((_event,s)=>{setTimeout(()=>setSession(s).catch(fail),0);});}catch(e){fail(e);}}
+async function setSession(session){user=session?.user||null;show('logout',!!user);show('auth',!user);show('pair',false);show('app',false);if(!user){partnerId=null;coupleInfo=null;return;}await loadCouple();}
+async function loadCouple(){const {data,error}=await db.rpc('get_my_couple_info');if(error)throw error;coupleInfo=data?.[0]||null;partnerId=coupleInfo?.partner_id||null;show('pair',!coupleInfo);show('app',!!coupleInfo);if(coupleInfo){$('pairStatus').textContent=partnerId?'İkiniz de bağlandınız ❤️':'Partnerin henüz katılmadı. Davet kodun: '+coupleInfo.invite_code;tick();await refresh();}}
+$('authForm').onsubmit=async e=>{e.preventDefault();notice('');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)fail(error);};
+$('signupBtn').onclick=async()=>{notice('');if(!$('authForm').reportValidity())return;const {data,error}=await db.auth.signUp({email:$('email').value.trim(),password:$('password').value});if(error)fail(error);else notice(data.session?'Hesabın oluşturuldu.':'Kayıt alındı. E-posta doğrulama bağlantısını kontrol et, ardından giriş yap.');};
+$('logout').onclick=async()=>{const {error}=await db.auth.signOut();if(error)fail(error);else notice('Çıkış yapıldı.');};
+$('createPair').onclick=async()=>{const {data,error}=await db.rpc('create_couple');if(error)fail(error);else{notice('Davet kodun: '+data+'\nBu kodu partnerinle paylaş.');await loadCouple().catch(fail);}};
+$('joinPair').onclick=async()=>{const code=$('inviteInput').value.trim();if(!code)return notice('Davet kodunu yaz.');const {error}=await db.rpc('join_couple',{code});if(error)fail(error);else{notice('Artık aynı alandasınız ❤️');await loadCouple().catch(fail);}};
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.tab').forEach(section=>show(section.id,section.id===btn.dataset.tab));});
+async function refresh(){await Promise.all([loadMemories(),loadWishes(),loadLetters()]);}
+async function loadMemories(){const {data,error}=await db.from('memories').select('id,title,description,event_date,created_at').order('event_date',{ascending:false});if(error)return fail(error);const root=$('memoryList');root.replaceChildren();for(const m of data){const item=el('div',undefined,'item');item.append(el('h3',m.title),el('small',m.event_date||''),el('p',m.description||''));root.append(item);}if(!data.length)root.append(el('p','Henüz anı eklenmedi.','muted'));}
+$('memoryForm').onsubmit=async e=>{e.preventDefault();const {error}=await db.from('memories').insert({title:$('memoryTitle').value.trim(),description:$('memoryDescription').value.trim(),event_date:$('memoryDate').value,created_by:user.id});if(error)return fail(error);e.target.reset();notice('Anınız kaydedildi ❤️');await loadMemories();};
+async function loadWishes(){const {data,error}=await db.from('wishes').select('id,title,completed,created_at').order('created_at',{ascending:false});if(error)return fail(error);const root=$('wishList');root.replaceChildren();for(const w of data){const item=el('div',undefined,'item');const row=el('div',undefined,'row');const name=el('span',(w.completed?'✅ ':'◻️ ')+w.title);const button=el('button',w.completed?'Geri al':'Tamamlandı','secondary');button.onclick=async()=>{const {error}=await db.from('wishes').update({completed:!w.completed}).eq('id',w.id);if(error)fail(error);else loadWishes();};row.append(name,button);item.append(row);root.append(item);}if(!data.length)root.append(el('p','İlk hayalinizi ekleyin.','muted'));}
+$('wishForm').onsubmit=async e=>{e.preventDefault();const {error}=await db.from('wishes').insert({title:$('wishTitle').value.trim(),completed:false,created_by:user.id});if(error)return fail(error);e.target.reset();notice('Hayaliniz eklendi ✨');await loadWishes();};
+async function loadLetters(){const {data,error}=await db.from('letters').select('id,title,content,sender,recipient,unlock_at,created_at').order('created_at',{ascending:false});if(error)return fail(error);const root=$('letterList');root.replaceChildren();for(const l of data){const item=el('div',undefined,'item');const mine=l.sender===user.id;item.append(el('h3',l.title),el('small',(mine?'Gönderdiğin mektup':'Sana gelen mektup')+' · Açılma: '+formatDate(l.unlock_at)),el('p',l.content));root.append(item);}if(!data.length)root.append(el('p','Henüz okunabilir veya gönderilmiş mektup yok.','muted'));}
+$('letterForm').onsubmit=async e=>{e.preventDefault();if(!partnerId)return notice('Mektup göndermek için partnerinin davet koduyla katılması gerekiyor.');const local=$('unlockAt').value;const unlock=new Date(local);if(Number.isNaN(unlock.getTime()))return notice('Geçerli bir tarih seç.');const {error}=await db.from('letters').insert({title:$('letterTitle').value.trim(),content:$('letterContent').value.trim(),sender:user.id,recipient:partnerId,unlock_at:unlock.toISOString()});if(error)return fail(error);e.target.reset();notice('Mektubun kaydedildi 💌');await loadLetters();};
+setInterval(()=>{if(user&&coupleInfo)tick();},60000);
+init();
+</script>
 </body>
 </html>
