@@ -23,9 +23,9 @@
 <script>
 // BURAYA SADECE SUPABASE PROJECT URL VE PUBLISHABLE / ANON KEY GİR.
 // service_role veya secret key ASLA yazma.
-const SUPABASE_URL='sb_publishable_Dhuz9-JfiMSpaScysEvfPA_0sFxZ4rH';
-const SUPABASE_ANON_KEY='https://gzccrqrjmrdrluqqmrrz.supabase.co';
-const configured=SUPABASE_URL.startsWith('https://')&&!SUPABASE_ANON_KEY.startsWith('sb_publishable_Dhuz9-JfiMSpaScysEvfPA_0sFxZ4rH');
+const SUPABASE_URL='https://gzccrqrjmrdrluqqmrrz.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_Dhuz9-JfiMSpaScysEvfPA_0sFxZ4rH';
+const configured=SUPABASE_URL.startsWith('https://')&&SUPABASE_ANON_KEY.startsWith('sb_publishable_');
 const db=configured&&window.supabase?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 const $=id=>document.getElementById(id);let user=null,partner=null,memories=[],wishes=[],letters=[],signup=false;
 const navs=[['home','⌂','Ana Sayfa'],['memories','▧','Anılar'],['letters','✉','Mektuplar'],['wishes','✓','Yapılacaklar'],['gazette','▤','Gazete'],['slot','♧','Otomat'],['calendar','▦','Takvim'],['settings','⚙','Ayarlar']];
